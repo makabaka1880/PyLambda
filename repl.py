@@ -171,6 +171,9 @@ def main():
                     error_occurred = False
                     save_variable = None  # Track output variable
                     
+                    parts = [p.strip() for p in args.replace(' ', '').split('>')]
+                    save_variable = parts[1] if len(parts) > 1 else None
+                    
                     try:
                         while True:
                             interface.show_reduction_step(step, session.current_term)
@@ -181,6 +184,7 @@ def main():
                             command = parts[0].lower()
                             output_var = parts[1] if len(parts) > 1 else None
 
+                            
                             # Handle commands
                             if command in ('exit', 'q'):
                                 if output_var:
