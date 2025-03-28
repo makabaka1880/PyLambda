@@ -46,3 +46,14 @@ class ParseError(Exception):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.literal!r})"
+
+class FixedPointDetected(Exception):
+    """Raised when consecutive reduction steps produce identical terms"""
+    def __init__(self, term = None, message="Infinite loop detected: term reduces to itself"):
+        self.term = term
+        self.message = message
+        super().__init__(message)
+    
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.term!r})"

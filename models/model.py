@@ -163,10 +163,16 @@ class Application(Term):
             return self.function.body.substitute(self.function.var.name, self.value)
         
         if not self.function.is_normal_form():
-            return Application(self.function.beta_reduce_step(), self.value)
+            try:
+                return Application(self.function.beta_reduce_step(), self.value)
+            except models.exceptions.ReductionOnNormalForm as e:
+                pass
         
         if not self.value.is_normal_form():
-            return Application(self.function, self.value.beta_reduce_step())
+            try:
+                return Application(self.function, self.value.beta_reduce_step())
+            except models.exceptions.ReductionOnNormalForm as e:
+                pass
         
         raise models.exceptions.ReductionOnNormalForm(term = self)
 

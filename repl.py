@@ -170,20 +170,24 @@ def main():
                     step = 0
                     error_occurred = False
                     save_variable = None  # Track output variable
-                    
+                    previous_literal = ""
                     parts = [p.strip() for p in args.replace(' ', '').split('>')]
                     save_variable = parts[1] if len(parts) > 1 else None
                     
                     try:
                         while True:
                             interface.show_reduction_step(step, session.current_term)
+                            if session.current_term.literal() == previous_literal:
+                                raise FixedPointDetected(term = session.current_term)
+
+                            previous_literal = session.current_term.literal()
+
                             user_input = input("β > ").strip()
                             
                             # Parse command and output variable
                             parts = [p.strip() for p in user_input.split('>', 1)]
                             command = parts[0].lower()
                             output_var = parts[1] if len(parts) > 1 else None
-
                             
                             # Handle commands
                             if command in ('exit', 'q'):
@@ -213,8 +217,17 @@ def main():
                                 if save_variable:
                                     session.db.insert_term(save_variable, session.current_term)
                                     interface.show_success(f'Auto-saved as "{save_variable}"')
+                                else:
+                                    interface.print_item(f'Current literal:\n{session.current_term.literal()}')
                                 break
-
+                    except FixedPointDetected as e:
+                        interface.show_success("Reached fixed point")
+                        if save_variable:
+                            session.db.insert_term(save_variable, session.current_term)
+                            interface.show_success(f'Auto-saved as "{save_variable}"')
+                        else:
+                            interface.print_item(f'Current literal:\n{session.current_term.literal()}')
+                            
                     except Exception as e:
                         interface.show_error(str(e))
                         error_occurred = True
