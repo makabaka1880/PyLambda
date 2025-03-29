@@ -1,7 +1,7 @@
 # PyLambda
 
 > Known Issues:
-> - The lambda abstraction $\lambda z.\; (\lambda y.\; \lambda z.\; y\; (y\; z))\; (\lambda y.\; \lambda z.\; y\; (y\; z))\; z$ is unable to be reducted correctly. Literal: `(\z. (((\y. ((\z. ((y) ((y) (z))))))) (((\y. ((\z. ((y) ((y) (z))))))) (z))))`
+> - The lambda abstraction $\lambda z.\ (\lambda y.\ \lambda z.\ y\ (y\ z))\ (\lambda y.\ \lambda z.\ y\ (y\ z))\ z$ is unable to be reducted correctly. Literal: `(\z. (((\y. ((\z. ((y) ((y) (z))))))) (((\y. ((\z. ((y) ((y) (z))))))) (z))))`
 
 A implementation of a simple lambda calculus intepreter, complete with beta-reduction features.
 
