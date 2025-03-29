@@ -1,13 +1,15 @@
 # PyLambda
 
-> Latest
-> Added automatic $\alpha$-conversion for var-capture avoidence. Enabled by default.
+> **Latest Update**  
+> Added automatic $\alpha$-conversion to avoid variable capture. Enabled by default.
 
-A implementation of a simple lambda calculus intepreter, complete with beta-reduction features.
+A simple lambda calculus interpreter with beta-reduction capabilities.
 
 ## Deployment
 
-### Command-line
+### Command-Line Interface
+
+To run PyLambda from the command line:
 
 ```zsh
 pip install -r requirements.txt
@@ -16,42 +18,41 @@ echo 'PATH/TO/DB' > .env
 python repl.py
 ```
 
-### Docker
-Under development
+### Docker Support
+
+Docker support is currently under development.
 
 ## REPL Syntax
 
-A command is consisted of a keyword and arguments. Keywords are case-insensitive, but args, given that they contains identifiers, are.
+Commands in the REPL consist of a keyword and arguments. Keywords are case-insensitive, but arguments, especially those containing identifiers, are case-sensitive.
 
-Below are the 4 keywords PyLambda support
+PyLambda supports the following commands:
 
-### DEF
-Defines a variable and stores it in the local sqlite3 db.
+### `DEF`
 
-Usage:
-```
+Defines a variable and stores it in the local SQLite database.
+
+**Usage:**
+```text
 λ > DEF func := (\x. \y. x (y))
 ```
 
-This defines the lambda abstraction $\lambda x.\ \lambda y.\ x\ y$. In PyLambda, bound variables uses haskell's syntax (backslash + identifier) to declare.
+This defines the lambda abstraction $\lambda x.\ \lambda y.\ x\ y$. In PyLambda, bound variables use Haskell-style syntax (backslash + identifier) for declaration.
 
-Due to technical limitations, here's some points worth noting:
+---
 
-1. Values of applications must be inclosed in parenthesis. When values are passed to curried parameters, the function body must also be enclosed in parenthesis.
-    - **Correct** `func (value)` or `(func (value1)) (value2)`
-    - **Incorrect** `func value` or `func (value1) (value2)`
+### `RED`
 
-### RED
 Performs $\beta$-reduction on a given application or abstraction.
 
-Usage:
-```
+**Usage:**
+```text
 λ > RED (\x. \y. x) (a)
 ```
 
-This opens up an other REPL interface: the **beta-reduction REPL**.
+This opens the **beta-reduction REPL** interface:
 
-```
+```text
 λ > RED (\x. \y. x) (a)
 Reducing: ((\x. ((\y. (x))))) (a)
 Step 0: (λx. (λy. x)) a
@@ -62,9 +63,9 @@ Reached normal form
 λ > 
 ```
 
-You can chose to store the reduced form of the application to a new variable:
+You can save the reduced form to a new variable:
 
-```
+```text
 λ > RED (\x. \y. x) (a) > result
 Reducing: ((\x. ((\y. (x))))) (a)
 Step 0: (λx. (λy. x)) a
@@ -77,9 +78,9 @@ Saved final result as "result"
 λ >
 ```
 
-Or via commands in the beta-reduction interface:
+Alternatively, save the result during the beta-reduction process:
 
-```
+```text
 λ > RED (\x. \y. x) (a)
 Reducing: ((\x. ((\y. (x))))) (a)
 Step 0: (λx. (λy. x)) a
@@ -93,9 +94,9 @@ Reached normal form
 λ >
 ```
 
-You can also quit to jump out of an unwanted recursion:
+To exit an unwanted recursion, use the `exit` command:
 
-```
+```text
 λ > DEF omega := (\x. x (x))
 λ > RED omega (omega)
 Reducing: ((\x. ((x) (x)))) ((\x. ((x) (x))))
@@ -109,15 +110,14 @@ Saved as "fixedPointCombinatorExample"
 λ >
 ```
 
-### SHOW
-Shows the content of a variable using unicode as a mathematical lambda abstraction expression.
+Example with Church numerals:
 
-```
-λ > DEF ChurchSucc := (\n. \f. \x. f (n (f (x) ) ) )
+```text
+λ > DEF ChurchSucc := (\n. \f. \x. f (n (f) (x)) )
 λ > DEF C1 := (\f. \x. f(x))
-λ > RED ChuchSucc (C1) > C2
-Reducing: (ChuchSucc) ((\f. ((\x. ((f) (x))))))
-Step 0: ChuchSucc (λf. (λx. f x))
+λ > RED ChurchSucc (C1) > C2
+Reducing: (ChurchSucc) ((\f. ((\x. ((f) (x))))))
+Step 0: ChurchSucc (λf. (λx. f x))
 β >
 Reached normal form
 Auto-saved as "C2"
@@ -125,12 +125,65 @@ Saved final result as "C2"
 λ > SHOW ChurchSucc; SHOW C1; SHOW C2;
 (λn. (λf. (λx. f n f x)))
 (λf. (λx. f x))
-ChuchSucc (λf. (λx. f x))
+ChurchSucc (λf. (λx. f x))
 λ >
 ```
 
-### EXIT
-Leaves the interface
+---
 
-### HELP
-Not yet implemented
+### `LIST` / `LS`
+
+Lists all terms stored in the database.
+
+**Usage:**
+```text
+λ + ls
+C3: (λf. (λx. (f (f (f x)))))
+IF: (λs. (λa. (λb. ((s a) b))))
+TRUE: (λx. (λy. x))
+FALSE: (λx. (λy. y))
+omega_x: (λx. (x x))
+Omega_x: ((λx. (x x)) (λx. (x x)))
+FixedPointCombinatorExample: ((λx. (x x)) (λx. (x x)))
+C1: (λf. (λx. (f x)))
+succ: (λn. (λf. (λx. (f ((n f) x)))))
+C2: (λf. (λx. (f (f x))))
+```
+
+`LIST` 
+---
+
+### `SHOW` / `DISPLAY`
+
+Displays the content of a variable using Unicode to represent the lambda abstraction.
+
+**Usage:**
+```text
+λ + ls
+C3: (λf. (λx. (f (f (f x)))))
+IF: (λs. (λa. (λb. ((s a) b))))
+TRUE: (λx. (λy. x))
+FALSE: (λx. (λy. y))
+omega_x: (λx. (x x))
+Omega_x: ((λx. (x x)) (λx. (x x)))
+FixedPointCombinatorExample: ((λx. (x x)) (λx. (x x)))
+C1: (λf. (λx. (f x)))
+succ: (λn. (λf. (λx. (f ((n f) x)))))
+C2: (λf. (λx. (f (f x))))
+λ + show C2
+(λf. (λx. (f (f x))))
+λ +
+```
+
+---
+
+### `EXIT`
+
+Exits the REPL interface.
+
+---
+
+### `HELP`
+
+This command is not yet implemented.
+

@@ -21,14 +21,8 @@ def parenthesis_match(literal: str) -> bool:
             count -= 1
     return count == 0
 
-def extract_application(literal: str) -> Tuple[str, str]:
-    r"""
-    Splits a string into top-level lambda calculus terms, handling nested parentheses.
-    
-    Examples:
-        '(\x.(x(x)))(\y.(y(y)))' → ['(\x.(x(x)))', '(\y.(y(y)))']
-        'a(b)' → ['a', '(b)']
-    """
+def extract_application(literal: str) -> list[str]:
+    """Split into all top-level terms (not just two)"""
     terms = []
     i = 0
     n = len(literal)
@@ -57,7 +51,7 @@ def extract_application(literal: str) -> Tuple[str, str]:
             if start != i:
                 terms.append(literal[start:i])
                 
-    return (terms[0], terms[1])
+    return terms  # Now returns list of all top-level terms
 
 def clear_parenthesis(literal: str) -> str:
     literal = literal.replace(' ', '')  # Clear blank spaces
@@ -111,11 +105,16 @@ def parse_abstraction(literal: str, db: Optional[TermDB] = None) -> Term:
 
 def parse_application(literal: str, db: Optional[TermDB] = None) -> Term:
     try:
-        func_str, arg_str = extract_application(literal)
-        return Application(
-            parse_lambda(func_str, db),
-            parse_lambda(arg_str, db)
-        )
+        terms = extract_application(literal)
+        if len(terms) < 2:
+            raise ParseError(f"Application requires at least two terms: {literal}")
+        
+        # Build left-associative nested applications
+        current_term = parse_lambda(terms[0], db)
+        for term_str in terms[1:]:
+            current_term = Application(current_term, parse_lambda(term_str, db))
+            
+        return current_term
     except ValueError as e:
         raise ParseError(f"Invalid application format: {literal}") from e
     

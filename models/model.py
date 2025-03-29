@@ -37,6 +37,10 @@ class Term:
         All subclasses define their own attributes (e.g., Variable.name).
     """
     
+    def tree_str(self, indent: str = "", last: bool = True) -> str:
+        """Generate hierarchical tree representation for debugging"""
+        raise NotImplementedError("tree_str not implemented for base Term")
+    
     def eval(self):
         raise NotImplementedError("`eval` method not yet implemented for class `Term`")
     
@@ -114,6 +118,10 @@ class Variable(Term):
     def __repr__(self) -> str:
         return self.name
     
+    def tree_str(self, indent: str = "", last: bool = True, child: bool = False) -> str:
+        branch = "└── " if last else "├── "
+        return f"{indent}{branch}{self.name}" if child else f"Variable {self.name}"
+    
     def is_normal_form(self) -> bool:
         """Variables are always in normal form."""
         return True
@@ -135,7 +143,7 @@ class Variable(Term):
         raise ReductionOnNormalForm(term=self)
     
     def literal(self) -> str:
-        return self.name
+        return f'({self.name})'
     
     def has_free(self, name: str) -> bool:
         """Checks if this variable matches the given name."""
@@ -207,6 +215,20 @@ class Abstraction(Term):
     def literal(self) -> str:
         return rf"(\{self.var.literal()}. {self.body.literal()})"
 
+
+    def tree_str(self, indent: str = "", last: bool = True, child: bool = False) -> str:
+        lines = []
+        branch = "└── " if last else "├── "
+        lines.append(f"{indent}{branch}λ {self.var.name}" if child else f"Abstraction" )
+        
+        # Maintain vertical lines for nested abstractions
+        new_indent = indent + ("│   " if not last else "    ")
+        
+        # Body subtree (always last child for abstractions)
+        lines.append(self.body.tree_str(new_indent, True, True))
+        
+        return "\n".join(lines)
+    
     def has_free(self, name: str) -> bool:
         """Checks for free occurrences of `name` in the body."""
         return self.var.name != name and self.body.has_free(name)
@@ -276,6 +298,23 @@ class Application(Term):
     def literal(self) -> str:
         return f"({self.function.literal()} {self.value.literal()})"
     
+    def tree_str(self, indent: str = "", last: bool = True, child: bool = False) -> str:
+        lines = []
+        branch = "└── " if last else "├── "
+        lines.append(f"{indent}{branch}Applicate" if child else f"Application")
+        
+        # Correct indentation: Use vertical lines for all children except last
+        new_indent = indent + ("    " if last else "│   ")
+        # new_indent = "│   "
+        
+        # Function subtree (not last)
+        lines.append(self.function.tree_str(new_indent, False, True))
+        
+        # Value subtree (last)
+        lines.append(self.value.tree_str(new_indent, True, True))
+        
+        return "\n".join(lines)
+    
     def has_free(self, name: str) -> bool:
         """Checks for free variables in either component."""
         return self.function.has_free(name) or self.value.has_free(name)
@@ -297,6 +336,23 @@ test_expr = Application(
     ),
     Variable('z')
 )
-"""Test case verifying substitution order:
-(λx. x y) z → z y
-"""
+
+church_succ = Abstraction(
+    Variable('n'),
+    Abstraction(
+        Variable('f'),
+        Abstraction(
+            Variable('x'),
+            Application(
+                Variable('f'),
+                Application(Variable('n'), Variable('f'))
+            )
+        )
+    )
+)
+
+if __name__ == "__main__":
+    print(church_succ.tree_str())
+    from parser import parse_lambda
+    weirdCombinator = parse_lambda(r"((\n. (n) (n))) ((\y. (\z. (y) ((y) (z)))))")
+    print(weirdCombinator.tree_str())

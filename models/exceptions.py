@@ -57,3 +57,17 @@ class FixedPointDetected(Exception):
     
     def __repr__(self):
         return f"{self.__class__.__name__}({self.term!r})"
+
+class InvalidTermError(Exception):
+    """Exception raised when a lambda term is invalid or malformed."""
+    
+    def __init__(self, term=None, message="Invalid or malformed lambda term"):
+        self.term = term
+        self.message = message
+        super().__init__(message)
+    
+    def __str__(self):
+        return self.args[0]
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.term!r})"
