@@ -36,7 +36,9 @@ class CommandHandler:
             'RED': self.handle_red,
             'SHOW': self.handle_show,
             'HELP': self.handle_help,
-            'EXIT': self.handle_exit
+            'LIST': self.handle_list,
+            'EXIT': self.handle_exit,
+            'DEL': self.handle_delete
         }
 
     def execute(self, command):
@@ -80,22 +82,44 @@ class CommandHandler:
             
         return f"Reducing: {self.session.current_term.literal()}"
 
+    def handle_delete(self, args):
+        """Handle DEL command with optional regex"""
+        parts = args.strip().split(maxsplit=1)
+        identifier = parts[0]
+        
+        if self.session.db.get_term(identifier, regex=True):
+            self.session.db.delete_term(identifier, regex=True)
+            return f"Deleted {identifier} (regex: {regex})"
+        raise ValueError(f"Identifier {identifier} not found")
+
     def handle_show(self, args):
-        """Handles SHOW command of identified var"""
-        identifier = args.strip()
-        
-        if term := self.session.db.get_term(identifier):
+        """Handle SHOW with regex"""
+        parts = args.strip().split(maxsplit=1)
+        identifier = parts[0]
+        if term := self.session.db.get_term(identifier, regex=True):
             return term
+        return None
+    
+    def handle_list(self, args):
+        """Lists all terms in the database"""
+        terms = self.session.db.get_all_terms()
+        if terms:
+            return ("\n".join([f"{Color.CYAN}{term[0]}{Color.OFF}: {term[1]}" for term in terms]))
         else:
-            return None
-        
+            return "No terms found"
+        return "No terms found"
+            
     def handle_help(self, _):
         """Show help information"""
         return (
             "Available commands:\n"
-            "DEF <name> := <term> - Define a new term\n"
-            "RED <term> - Start beta reduction\n"
-            "EXIT - Quit the REPL"
+            f"{Color.CYAN}{Effect.BOLD}DEF{Effect.OFF} <name> := <term> {Color.OFF} Define a new term\n"
+            f"{Color.CYAN}{Effect.BOLD}RED{Effect.OFF} <term> {Color.OFF} Start beta reduction\n"
+            f"{Color.CYAN}{Effect.BOLD}SHOW{Effect.OFF} <name> {Color.OFF} Show term by identifier\n"
+            f"{Color.CYAN}{Effect.BOLD}DEL{Effect.OFF} <name> {Color.OFF} Delete term by identifier\n"
+            f"{Color.CYAN}{Effect.BOLD}HELP{Effect.OFF} {Color.OFF} Show this help message\n"
+            f"{Color.CYAN}{Effect.BOLD}LIST{Effect.OFF} {Color.OFF} List all terms\n"
+            f"{Color.CYAN}{Effect.BOLD}EXIT{Effect.OFF} {Color.OFF} Quit the REPL"
         )
 
     def handle_exit(self, _):
@@ -239,6 +263,23 @@ def main():
 
                     session.output_var = None
                 
+                if keyword.upper() == 'LIST':
+                    interface.print_item(response)
+                if keyword.upper() == 'DEL':
+                    if response:
+                        interface.show_success(response)
+                    else:
+                        interface.show_error(f'Term for identifier {args} does not exist.')
+                if keyword.upper() == 'DEF':
+                    if response:
+                        interface.show_success(response)
+                    else:
+                        interface.show_error(f'Definition failed for {args}')
+                if keyword.upper() == 'HELP':
+                    interface.print_item(response)
+                if keyword.upper() == 'EXIT':
+                    interface.show_success(response)
+                    session.running = False
 
         except EOFError:
             handler.handle_exit(None)

@@ -1,4 +1,4 @@
-# Create by Sean L. on Mar. 28
+# Created by Sean L. on Mar. 28
 # 
 # Lambda Calculus Implementation
 # models/model.py
@@ -6,174 +6,297 @@
 # Makabaka1880, 2025. All rights reserved.
 
 from models.exceptions import *
-from uuid import uuid4
+from typing import Callable
 
-def fresh_variable(base: str, crit) -> str:
+def fresh_variable(base: str, crit: Callable[[str], bool]) -> str:
+    """Generates a fresh variable name by appending primes until `crit` returns False.
+    
+    Used to avoid variable capture during substitution.
+    
+    Arguments:
+        base (str): Base variable name (e.g., "z")
+        crit (Callable[[str], bool]): Conflict checker function
+        
+    Returns:
+        str: A unique variable name like "z''" if needed
+        
+    Example:
+        >>> fresh_variable("z", lambda s: s == "z")
+        "z'"
+    """
     while crit(base):
         base += "'"
     return base
 
 class Term:
-    """Base class for any term in a lambda abstraction."""
+    """Abstract base class for lambda calculus terms.
+    
+    Subclasses must implement core operations like substitution and beta reduction.
+    
+    Attributes:
+        All subclasses define their own attributes (e.g., Variable.name).
+    """
     
     def eval(self):
         raise NotImplementedError("`eval` method not yet implemented for class `Term`")
     
     def substitute(self, target: str, replacement: "Term") -> "Term":
-        """Substitutes free occurrences of `target` with `replacement`, ensuring left-to-right order."""
+        """Substitutes free occurrences of `target` with `replacement`.
+        
+        Arguments:
+            target (str): Variable name to replace (e.g., "x")
+            replacement (Term): Term to substitute in
+            
+        Returns:
+            Term: New term with substitutions applied
+        """
         raise NotImplementedError("Substitute method not implemented.")
     
     def alpha_conversion(self, name: str) -> "Term":
-        """Renames bound variables to prevent name conflicts."""
+        """Renames bound variables to avoid name conflicts.
+        
+        Arguments:
+            name (str): New variable name (e.g., "x'")
+            
+        Returns:
+            Term: Alpha-equivalent term with renamed variables
+        """
         raise NotImplementedError("Alpha conversion method not implemented.")
     
     def beta_reduce_step(self) -> "Term":
-        """Performs a single beta reduction step."""
+        """Performs a single beta reduction step (leftmost-outermost).
+        
+        Returns:
+            Term: Reduced term
+            
+        Throws:
+            ReductionOnNormalForm: If no reduction is possible
+        """
         raise NotImplementedError("Beta reduction step not implemented.")
     
     def is_normal_form(self) -> bool:
-        """Checks if the term is in normal form (i.e., cannot be reduced further)."""
+        """Checks if the term is in normal form (no reducible expressions).
+        
+        Returns:
+            bool: True if no beta reductions can be applied
+        """
         raise NotImplementedError("Normal form detection not implemented.")
 
     def literal(self) -> str:
+        """Generates a string representation matching lambda calculus syntax.
+        
+        Returns:
+            str: Syntax-valid string like "λx. x y"
+        """
         raise NotImplementedError("Literal representation not implemented.")
 
 class Variable(Term):
-    """Represents a lambda variable."""
+    """Represents a variable in lambda calculus.
     
-    def __init__(self, name):
+    Attributes:
+        name (str): Variable identifier (e.g., "x")
+        
+    Example:
+        >>> x = Variable("x")
+        >>> x.has_free("x")
+        True
+    """
+    
+    def __init__(self, name: str):
+        """Initializes a Variable instance.
+        
+        Arguments:
+            name (str): Variable identifier
+        """
         super().__init__()
         self.name = name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.name
     
-    def is_normal_form(self):
+    def is_normal_form(self) -> bool:
+        """Variables are always in normal form."""
         return True
     
-    def alpha_conversion(self, name):
-        return self  # No alpha conversion needed for standalone variables
+    def alpha_conversion(self, name: str) -> "Variable":
+        """Variables don't require alpha conversion (identity operation)."""
+        return self
     
-    def substitute(self, target, replacement):
+    def substitute(self, target: str, replacement: Term) -> Term:
+        """Replaces this variable if it matches the target.
+        
+        Arguments:
+            target (str): Variable name to replace
+            replacement (Term): Term to substitute in
+        """
         return replacement if self.name == target else self
 
-    def beta_reduce_step(self):
+    def beta_reduce_step(self) -> "Variable":
         raise ReductionOnNormalForm(term=self)
     
-    def literal(self):
+    def literal(self) -> str:
         return self.name
     
     def has_free(self, name: str) -> bool:
+        """Checks if this variable matches the given name."""
         return self.name == name
 
 class Abstraction(Term):
-    """Represents a lambda abstraction (λx. body)."""
+    """Represents a lambda abstraction (λx. body).
     
-    def __init__(self, var, body):
+    Attributes:
+        var (Variable): Bound variable (e.g., "x")
+        body (Term): Body of the abstraction
+        
+    Example:
+        >>> abs_term = Abstraction(Variable("x"), Variable("x"))
+        >>> abs_term.literal()
+        "(\\x. x)"
+    """
+    
+    def __init__(self, var: Variable, body: Term):
+        """Initializes an Abstraction instance.
+        
+        Arguments:
+            var (Variable): Bound variable
+            body (Term): Term representing the abstraction body
+        """
         super().__init__()
         self.var = var
         self.body = body
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"(λ{self.var}. {self.body})"
     
-    def is_normal_form(self):
+    def is_normal_form(self) -> bool:
+        """Abstractions are in normal form if their body is."""
         return self.body.is_normal_form()
 
     def alpha_conversion(self, new_name: str) -> "Abstraction":
-        """Renames the bound variable to avoid capture."""
+        """Renames the bound variable to avoid capture.
+        
+        Arguments:
+            new_name (str): New variable name (e.g., "x'")
+        """
         new_var = Variable(new_name)
         new_body = self.body.substitute(self.var.name, new_var)
-        val = Abstraction(new_var, new_body)
-        return val
+        return Abstraction(new_var, new_body)
 
     def substitute(self, target: str, replacement: Term) -> Term:
-        """Substitutes target variable with replacement in the abstraction's body."""
-        if self.var.name == target:
-            return self  # Bound variable is shadowing `target`, so no substitution
-        # Ensure no variable capture
-        if replacement.has_free(self.var.name):
-            new_var_name = fresh_variable(self.var.name, crit = replacement.has_free)
-            new_abs = self.alpha_conversion(new_var_name)
-            return Abstraction(new_abs.var, new_abs.body.substitute(target, replacement))
+        """Substitutes in the abstraction body, avoiding variable capture.
         
+        Arguments:
+            target (str): Variable name to replace
+            replacement (Term): Term to substitute in
+        """
+        if self.var.name == target:
+            return self  # Bound variable shadows target
+        
+        if replacement.has_free(self.var.name):
+            new_name = fresh_variable(self.var.name, replacement.has_free)
+            return self.alpha_conversion(new_name).substitute(target, replacement)
+            
         return Abstraction(self.var, self.body.substitute(target, replacement))
 
     def beta_reduce_step(self) -> "Abstraction":
+        """Reduces the abstraction body if possible."""
         if self.is_normal_form():
             raise ReductionOnNormalForm(term=self)
         return Abstraction(self.var, self.body.beta_reduce_step())
 
-    def literal(self):
+    def literal(self) -> str:
         return rf"(\{self.var.literal()}. {self.body.literal()})"
 
     def has_free(self, name: str) -> bool:
+        """Checks for free occurrences of `name` in the body."""
         return self.var.name != name and self.body.has_free(name)
 
 class Application(Term):
-    """Represents function application (f x)."""
+    """Represents function application (f x).
     
-    def __init__(self, function, value):
+    Attributes:
+        function (Term): Applied function term
+        value (Term): Argument term
+        
+    Example:
+        >>> app = Application(Variable("f"), Variable("x"))
+        >>> app.literal()
+        "(f x)"
+    """
+    
+    def __init__(self, function: Term, value: Term):
+        """Initializes an Application instance.
+        
+        Arguments:
+            function (Term): Function to apply
+            value (Term): Argument to apply
+        """
         super().__init__()
         self.function = function
         self.value = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"({self.function} {self.value})"
 
-    def is_normal_form(self):
-        return isinstance(self.function, Abstraction) is False and self.function.is_normal_form() and self.value.is_normal_form()
+    def is_normal_form(self) -> bool:
+        """Applications are in normal form if neither component can reduce."""
+        return (
+            not isinstance(self.function, Abstraction) and 
+            self.function.is_normal_form() and 
+            self.value.is_normal_form()
+        )
     
-    def alpha_conversion(self, name):
-        """Applies alpha conversion to both function and value."""
-        val = Application(self.function.alpha_conversion(name), self.value.alpha_conversion(name))
-        return Application(self.function.alpha_conversion(name), self.value.alpha_conversion(name))
+    def alpha_conversion(self, name: str) -> "Application":
+        """Applies alpha conversion to both function and argument."""
+        return Application(
+            self.function.alpha_conversion(name),
+            self.value.alpha_conversion(name)
+        )
 
-    def substitute(self, target, replacement):
-        """Substitutes all occurence of a variabel in an application"""
-        new_function = self.function.substitute(target, replacement)
-        new_value = self.value.substitute(target, replacement)
-        val = Application(new_function, new_value)
-        print(val)
-        return val
+    def substitute(self, target: str, replacement: Term) -> "Application":
+        """Substitutes in both function and argument components."""
+        return Application(
+            self.function.substitute(target, replacement),
+            self.value.substitute(target, replacement)
+        )
 
-    def beta_reduce_step(self):
-        """Performs a single beta reduction step."""
+    def beta_reduce_step(self) -> Term:
+        """Performs leftmost-outermost beta reduction."""
         if isinstance(self.function, Abstraction):
-            return self.function.body.substitute(self.function.var.name, self.value)
+            return self.function.body.substitute(
+                self.function.var.name, 
+                self.value
+            )
         
-        if not self.function.is_normal_form():
-            try:
-                return Application(self.function.beta_reduce_step(), self.value)
-            except ReductionOnNormalForm:
-                pass
-        
-        if not self.value.is_normal_form():
-            try:
-                return Application(self.function, self.value.beta_reduce_step())
-            except ReductionOnNormalForm:
-                pass
-        
-        raise ReductionOnNormalForm(term=self)
+        try:
+            return Application(self.function.beta_reduce_step(), self.value)
+        except ReductionOnNormalForm:
+            return Application(self.function, self.value.beta_reduce_step())
 
-    def literal(self):
-        return rf"({self.function.literal()}) ({self.value.literal()})"
+    def literal(self) -> str:
+        return f"({self.function.literal()} {self.value.literal()})"
     
     def has_free(self, name: str) -> bool:
+        """Checks for free variables in either component."""
         return self.function.has_free(name) or self.value.has_free(name)
 
 # MARK: Helper Functions
-def makeVar(name):
+def makeVar(name: str) -> Variable:
+    """Helper for creating Variable instances.
+    
+    Example:
+        >>> x = makeVar("x")
+    """
     return Variable(name)
 
-# Test case to verify strict left-to-right behavior
+# Test case for left-to-right reduction
 test_expr = Application(
     Abstraction(
         Variable('x'),
-        Application(
-            Variable('x'),
-            Variable('y')
-        )
+        Application(Variable('x'), Variable('y'))
     ),
     Variable('z')
 )
+"""Test case verifying substitution order:
+(λx. x y) z → z y
+"""
