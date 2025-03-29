@@ -219,7 +219,7 @@ class Abstraction(Term):
     def tree_str(self, indent: str = "", last: bool = True, child: bool = False) -> str:
         lines = []
         branch = "└── " if last else "├── "
-        lines.append(f"{indent}{branch}λ {self.var.name}" if child else f"Abstraction" )
+        lines.append(f"{indent}{branch}λ {self.var.name}" if child else f"Abstraction λ {self.var.name}" )
         
         # Maintain vertical lines for nested abstractions
         new_indent = indent + ("│   " if not last else "    ")

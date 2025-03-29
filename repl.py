@@ -11,10 +11,27 @@ from models.model import Term, Abstraction, Variable, Application
 from preproc import normalize_blank
 from parser import *
 from models.exceptions import *
-from colors import status_label, italic_text, bold_text, LABELS, COLORS, color_text
+from colors import italic_text, bold_text, LABELS, COLORS, color_text, IO_label
+import os
+import subprocess
 import re
 
-    
+counter = 0
+
+def width():
+    """Get the width of the terminal window"""
+    result = subprocess.run(['tput', 'cols'], stdout=subprocess.PIPE)
+    return int(result.stdout.decode().strip())
+
+def filler(width, *text, regard_labels: bool = True):
+    """Width of fillers needed to fill a line of certain width with text"""
+    """Return a string of spaces to fill the line"""
+    returned =  (width - sum(len(t) for t in text) - len(text) + 1)
+    if regard_labels:
+        return returned - 13 - len(str(counter))
+    else:
+        return returned
+
 class REPLSession:
     def __init__(self):
         self.db = TermDB()  # Replace registered_table
@@ -40,47 +57,47 @@ class REPLInterface:
     @staticmethod
     def get_lambda_prompt() -> str:
         """Wrap ANSI codes for readline compatibility"""
-        return f"{status_label(LABELS['lambda_prompt'], COLORS['lambda_prompt'])} {bold_text('λ')} + "
+        return f"{IO_label('lambda_prompt', counter)} "
         
     @staticmethod
     def get_alpha_prompt() -> str:
         """Wrap ANSI codes for readline compatibility"""
-        return f"{status_label(LABELS['alpha_prompt'], COLORS['alpha_prompt'])} {bold_text('α')} + "
+        return f"{IO_label('alpha_prompt', counter)} "
     
     @staticmethod
     def get_beta_prompt() -> str:
         """Wrap ANSI codes for readline compatibility"""
-        return f"{status_label(LABELS['beta_prompt'], COLORS['beta_prompt'])} {bold_text('β')} + "
+        return f"{IO_label('beta_prompt', counter)} "
         
     @classmethod
     def show_warning(cls, message):
         for line in str(message).splitlines():
-            print(f"{status_label(LABELS['warning'], COLORS['warning'])} {line}")
+            print(f"{IO_label('warning', counter)} {line}")
         
     @classmethod
     def print_raw(cls, item):
         for line in str(item).splitlines():
-            print(f"{status_label(LABELS['data'], COLORS['data'])} {line}")
+            print(f"{IO_label('data', counter)} {line}")
 
     @classmethod
     def log_item(cls, message):
         for line in str(message).splitlines():
-            print(f"{status_label(LABELS['info'], COLORS['info'])} {line}")
+            print(f"{IO_label('info', counter)} {line}")
         
     @classmethod
     def show_error(cls, message):
         for line in str(message).splitlines():
-            print(f"{status_label(LABELS['error'], COLORS['error'])} {line}")
+            print(f"{IO_label('error', counter)} {line}")
 
     @classmethod
     def show_success(cls, message, end='\n'):
         for line in str(message).splitlines():
-            print(f"{status_label(LABELS['success'], COLORS['success'])} {line}", end=end)
+            print(f"{IO_label('success', counter)} {line}", end=end)
 
     @classmethod
-    def show_reduction_step(cls, step, term):
+    def show_beta_reduction_step(cls, term):
         for line in str(term).splitlines():
-            print(f"{status_label(LABELS['beta_reduction_step'], COLORS['beta_reduction_step'])} {step}: {line}")
+            print(f"{IO_label('beta_reduction_step', counter)} β →{filler(width(), line, ' b -') * ' '}{line}")
     
 
 interface = REPLInterface()
@@ -160,7 +177,7 @@ class CommandHandler:
         else:
             self.session.current_term = parse_lambda(term_part, self.session.db)
             
-        return f"Reducing: {self.session.current_term.literal()}"
+        return f"{bold_text('Reducing')}{' ' * filler(width(), 'Reducing', self.session.current_term.literal())}{self.session.current_term.literal()}"
 
     def handle_literal(self, args, forced=False):
         """Shows content of term in PyLambda literal"""
@@ -202,8 +219,7 @@ class CommandHandler:
         else:
             terms = self.session.db.get_all_terms(forced=forced)
         if terms:
-            return ("\n".join([f"{term[0]} {term[1]}" for term in terms]))
-        
+            return ("\n".join([f"{bold_text(term[0])}{filler(width(), str(term[0]), str(term[1])) * ' '}{term[1]}" for term in terms]))
         return "No terms found"
             
     def handle_help(self, _, forced=False):
@@ -222,9 +238,7 @@ class CommandHandler:
             doc = (handler.__doc__ or "No description available").split('\n')[0].strip()
             
             # Format command list with bold and color
-            formatted_commands = f"{Color.CYAN}{Effect.BOLD}" + \
-                                f"{', '.join(sorted(commands))}" + \
-                                f"{Effect.OFF}{Color.OFF}"
+            formatted_commands = f"{italic_text(bold_text(', '.join(sorted(commands))))}"
             
             help_entries.append((formatted_commands, doc))
 
@@ -248,17 +262,18 @@ class CommandHandler:
         """Handle unknown commands"""
         raise ValueError("Unknown command")
 
-
-
 def main():
+    global counter
     session = REPLSession()
     handler = CommandHandler(session)
+    for color, label in zip(COLORS.values(), LABELS.values()):
+        print(f"{color_text(f'{label}', color, bg=True)}")
     while session.running:
         try:
+            print(width() * '-')
             line = input(interface.get_lambda_prompt()).strip()
             if not line:
                 continue
-            
             decorator = line[0]
             line = line[1:] if decorator == '!' else line
             readline.add_history(line)
@@ -267,10 +282,6 @@ def main():
             for cmd in commands:
                 cmd = cmd.strip()
                 if not cmd:
-                    continue
-                if cmd == 'pal':
-                    for color, label in zip(COLORS.values(), LABELS.values()):
-                        print(f"{color_text(f'{label}', color, bg=True)}")
                     continue
                         
                 keyword, args = normalize_blank(cmd)
@@ -287,7 +298,6 @@ def main():
                     if decorator == '!':
                         interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('REDUCE')} command, ignored on execution.')
                     interface.log_item(response)
-                    step = 0
                     error_occurred = False
                     save_variable = None  # Track output variable
                     previous_literal = ""
@@ -296,7 +306,7 @@ def main():
                     
                     try:
                         while True:
-                            interface.show_reduction_step(step, session.current_term)
+                            interface.show_beta_reduction_step(session.current_term)
                             if session.current_term.literal() == previous_literal:
                                 raise FixedPointDetected(term = session.current_term)
 
@@ -331,7 +341,7 @@ def main():
                             # Perform reduction step
                             try:
                                 session.current_term = session.current_term.beta_reduce_step()
-                                step += 1
+                                counter += 1
                             except ReductionOnNormalForm as e:
                                 interface.show_success("Reached normal form")
                                 if save_variable:
@@ -339,16 +349,16 @@ def main():
                                     interface.show_success(f'Auto-saved as {italic_text(save_variable)}')
                                 else:
                                     interface.log_item(f'Current literal: ')
-                                    interface.print_raw(session.current_term.literal())
+                                    interface.print_raw(italic_text(f'DEF %{counter} := {session.current_term.literal()}'))
                                 break
                     except FixedPointDetected as e:
-                        interface.show_success("Reached fixed point")
+                        interface.show_success(f"Reduction reached fixed point")
                         if save_variable:
                             session.db.insert_term(save_variable, session.current_term)
                             interface.show_success(f'Auto-saved as {italic_text(save_variable)}')
                         else:
                             interface.log_item(f'Current literal: ')
-                            interface.print_raw(session.current_term.literal())
+                            interface.print_raw(italic_text(f'DEF %{counter} := {session.current_term.literal()}'))
                             
                     except Exception as e:
                         interface.show_error(str(e))
@@ -404,10 +414,12 @@ def main():
         except EOFError:
             handler.handle_exit(None)
         except KeyboardInterrupt:
-            interface.show_error("Operation cancelled by user")
-            handler.handle_exit(None)
+            print()
+            interface.show_warning("Operation cancelled by user")
+            # handler.handle_exit(None)
         except Exception as e:
             interface.show_error(str(e))
-
+    counter += 1
+    
 if __name__ == "__main__":
     main()

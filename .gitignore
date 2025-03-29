@@ -1,0 +1,72 @@
+# ========== Core Python Artifacts ========== [1,4,5](@ref)
+*/__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ========== Virtual Environments ========== [4,5,7](@ref)
+venv/
+env/
+.venv/
+venv*/
+env*/
+.venv*/
+ENV/
+env.bak/
+venv.bak/
+Pipfile
+Pipfile.lock
+
+# ========== Build & Distribution ========== [1,5](@ref)
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# ========== IDE & Editor Configs ========== [6,7](@ref)
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.sublime-project
+*.sublime-workspace
+
+# ========== Testing & Coverage ========== [5](@ref)
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.python-version
+
+# ========== Logs & Databases ========== [5,7](@ref)
+*.log
+*.sqlite
+*.db
+*.sqlite3
+*.pid
+
+# ========== Environment Secrets ========== [7](@ref)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
