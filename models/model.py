@@ -8,8 +8,10 @@
 from models.exceptions import *
 from uuid import uuid4
 
-def fresh_variable(base: str) -> str:
-    return f"{base}_{uuid4().hex[:4]}"
+def fresh_variable(base: str, crit) -> str:
+    while crit(base):
+        base += "'"
+    return base
 
 class Term:
     """Base class for any term in a lambda abstraction."""
@@ -91,7 +93,7 @@ class Abstraction(Term):
             return self  # Bound variable is shadowing `target`, so no substitution
         # Ensure no variable capture
         if replacement.has_free(self.var.name):
-            new_var_name = fresh_variable(self.var.name)
+            new_var_name = fresh_variable(self.var.name, crit = replacement.has_free)
             new_abs = self.alpha_conversion(new_var_name)
             return Abstraction(new_abs.var, new_abs.body.substitute(target, replacement))
         
