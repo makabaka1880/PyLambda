@@ -28,7 +28,8 @@ Commands in the REPL consist of a keyword and arguments. Keywords are case-insen
 
 PyLambda supports the following commands:
 
-### `DEF`
+### Keywords
+#### `DEF`
 
 Defines a variable and stores it in the local SQLite database.
 
@@ -41,7 +42,7 @@ This defines the lambda abstraction $\lambda x.\ \lambda y.\ x\ y$. In PyLambda,
 
 ---
 
-### `RED`
+#### `RED`
 
 Performs $\beta$-reduction on a given application or abstraction.
 
@@ -131,7 +132,7 @@ ChurchSucc (λf. (λx. f x))
 
 ---
 
-### `LIST` / `LS`
+#### `LIST` / `LS`
 
 Lists all terms stored in the database.
 
@@ -153,7 +154,7 @@ C2: (λf. (λx. (f (f x))))
 `LIST` 
 ---
 
-### `SHOW` / `DISPLAY`
+#### `SHOW` / `DISPLAY`
 
 Displays the content of a variable using Unicode to represent the lambda abstraction.
 
@@ -177,13 +178,13 @@ C2: (λf. (λx. (f (f x))))
 
 ---
 
-### `EXIT`
+#### `EXIT`
 
 Exits the REPL interface.
 
 ---
 
-### `HELP`
+#### `HELP`
 
 This command is not yet implemented.
 

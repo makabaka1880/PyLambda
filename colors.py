@@ -1,3 +1,4 @@
+# MARK: Imports and Metadata
 # Created by Sean L. on Mar. 28
 # 
 # Lambda Calculus Implementation
@@ -5,11 +6,14 @@
 #
 # Makabaka1880, 2025. All rights reserved.
 
+# MARK: Utility Functions
 def hex_to_rgb(hex_code):
     hex_code = hex_code.lstrip('#').lower()
     return tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
 
 def color_text(text, hex_color, bg=False):
+    if not hex_color:
+        return text
     r, g, b = hex_to_rgb(hex_color)
     mode = 48 if bg else 38
     return f"\033[{mode};2;{r};{g};{b}m{text}\033[0m"
@@ -29,7 +33,7 @@ def blinking_text(text):
 def status_label(text, hex_color, bg=False):
     return bold_text(color_text(f"[{text}]", hex_color, bg))
 
-# Global constants for colors and labels
+# MARK: Global Constants
 PALETTES = [
     # 0. Default
     {
@@ -41,7 +45,9 @@ PALETTES = [
         'info': '#00AAAA',
         'error': '#EE3300',
         'success': '#00EE99',
-        'beta_reduction_step': '#EECC55'
+        'beta_reduction_step': '#EECC55',
+        'alpha_conversion_step': '#AA55EE',
+        'security_prompt': '#FF00FF'
     },
     # 1. Ocean Depths
     {
@@ -49,16 +55,20 @@ PALETTES = [
         'beta_prompt': '#4ECDC4', 'warning': '#FF6B6B',
         'data': '#45B7D1', 'info': '#7EC8E3',
         'error': '#FF4040', 'success': '#4DBD90',
-        'beta_reduction_step': '#FFE66D'
+        'beta_reduction_step': '#FFE66D',
+        'alpha_conversion_step': '#6A5ACD',
+        'security_prompt': '#FF00FF'
     },
     
     # 2. Midnight Syntax
     {
-        'lambda_prompt': '#6272A4', 'alpha_prompt': '#BD93F9',
-        'beta_prompt': '#FF79C6', 'warning': '#FFB86C',
         'data': '#8BE9FD', 'info': '#50FA7B',
         'error': '#FF5555', 'success': '#69FF94',
-        'beta_reduction_step': '#F1FA8C'
+        'beta_reduction_step': '#F1FA8C',
+        'success': '#69FF94',
+        'beta_reduction_step': '#F1FA8C',
+        'alpha_conversion_step': '#FF6FCF',
+        'security_prompt': '#FF00FF'
     },
 
     # 3. Forest Canopy  
@@ -67,7 +77,9 @@ PALETTES = [
         'beta_prompt': '#59981A', 'warning': '#ECF87F',
         'data': '#416D19', 'info': '#B5D8CC',
         'error': '#D34E24', 'success': '#A4DE02',
-        'beta_reduction_step': '#FFE8A5'
+        'beta_reduction_step': '#FFE8A5',
+        'alpha_conversion_step': '#A3CFA3',
+        'security_prompt': '#FF00FF'
     },
 
     # 4. Solarized Dark
@@ -76,7 +88,9 @@ PALETTES = [
         'beta_prompt': '#B58900', 'warning': '#CB4B16',
         'data': '#2AA198', 'info': '#6C71C4',
         'error': '#DC322F', 'success': '#859900',
-        'beta_reduction_step': '#EEE8D5'
+        'beta_reduction_step': '#EEE8D5',
+        'alpha_conversion_step': '#93A1A1',
+        'security_prompt': '#FF00FF'
     },
 
     # 5. Neon Cyber
@@ -85,7 +99,9 @@ PALETTES = [
         'beta_prompt': '#FF0099', 'warning': '#FFE900',
         'data': '#00FFA3', 'info': '#8A2BE2',
         'error': '#FF0066', 'success': '#00FF57',
-        'beta_reduction_step': '#FF7F11'
+        'beta_reduction_step': '#FF7F11',
+        'alpha_conversion_step': '#FF33FF',
+        'security_prompt': '#FF00FF'
     },
 
     # 6. Earth Tones
@@ -94,7 +110,9 @@ PALETTES = [
         'beta_prompt': '#D2B48C', 'warning': '#DAA520',
         'data': '#6B8E23', 'info': '#808000',
         'error': '#8B0000', 'success': '#556B2F',
-        'beta_reduction_step': '#DEB887'
+        'beta_reduction_step': '#DEB887',
+        'alpha_conversion_step': '#A0522D',
+        'security_prompt': '#FF00FF'
     },
 
     # 7. Arctic Frost
@@ -103,7 +121,9 @@ PALETTES = [
         'beta_prompt': '#B0E0E6', 'warning': '#FFD700',
         'data': '#5F9EA0', 'info': '#AFEEEE',
         'error': '#B22222', 'success': '#98FB98',
-        'beta_reduction_step': '#F0FFFF'
+        'beta_reduction_step': '#F0FFFF',
+        'alpha_conversion_step': '#ADD8E6',
+        'security_prompt': '#FF00FF'
     },
 
     # 8. Dracula
@@ -112,7 +132,9 @@ PALETTES = [
         'beta_prompt': '#8BE9FD', 'warning': '#F1FA8C',
         'data': '#6272A4', 'info': '#50FA7B',
         'error': '#FF5555', 'success': '#69FF94',
-        'beta_reduction_step': '#FFB86C'
+        'beta_reduction_step': '#FFB86C',
+        'alpha_conversion_step': '#FF92DF',
+        'security_prompt': '#FF00FF'
     },
 
     # 9. Retro CRT
@@ -121,7 +143,9 @@ PALETTES = [
         'beta_prompt': '#FF00FF', 'warning': '#FFFF00',
         'data': '#00FF7F', 'info': '#7FFF00',
         'error': '#FF0000', 'success': '#00FF7F',
-        'beta_reduction_step': '#FFA500'
+        'beta_reduction_step': '#FFA500',
+        'alpha_conversion_step': '#00FFCC',
+        'security_prompt': '#FF00FF'
     },
 
     # 10. Sunset Dunes
@@ -130,7 +154,9 @@ PALETTES = [
         'beta_prompt': '#FFD700', 'warning': '#FF4500',
         'data': '#CD5C5C', 'info': '#DEB887',
         'error': '#8B0000', 'success': '#7CFC00',
-        'beta_reduction_step': '#FFDAB9'
+        'beta_reduction_step': '#FFDAB9',
+        'alpha_conversion_step': '#FFB6C1',
+        'security_prompt': '#FF00FF'
     },
 
     # 11. Matrix
@@ -139,7 +165,9 @@ PALETTES = [
         'beta_prompt': '#009900', 'warning': '#FFFF00',
         'data': '#006600', 'info': '#003300',
         'error': '#FF0000', 'success': '#00FF66',
-        'beta_reduction_step': '#99FF99'
+        'beta_reduction_step': '#99FF99',
+        'alpha_conversion_step': '#33FF33',
+        'security_prompt': '#FF00FF'
     },
 
     # 12. Galaxy Core
@@ -148,7 +176,9 @@ PALETTES = [
         'beta_prompt': '#FF00FF', 'warning': '#FFD700',
         'data': '#4B0082', 'info': '#7B68EE',
         'error': '#DC143C', 'success': '#00FA9A',
-        'beta_reduction_step': '#E6E6FA'
+        'beta_reduction_step': '#E6E6FA',
+        'alpha_conversion_step': '#DDA0DD',
+        'security_prompt': '#FF00FF'
     },
 
     # 13. Industrial
@@ -157,7 +187,9 @@ PALETTES = [
         'beta_prompt': '#808080', 'warning': '#DAA520',
         'data': '#2F4F4F', 'info': '#778899',
         'error': '#8B0000', 'success': '#228B22',
-        'beta_reduction_step': '#DCDCDC'
+        'beta_reduction_step': '#DCDCDC',
+        'alpha_conversion_step': '#B0C4DE',
+        'security_prompt': '#FF00FF'
     },
 
     # 14. Tropical Reef
@@ -166,7 +198,9 @@ PALETTES = [
         'beta_prompt': '#00FFEF', 'warning': '#FFD700',
         'data': '#008B8B', 'info': '#AFEEEE',
         'error': '#FF4500', 'success': '#7FFF00',
-        'beta_reduction_step': '#FF69B4'
+        'beta_reduction_step': '#FF69B4',
+        'alpha_conversion_step': '#20B2AA',
+        'security_prompt': '#FF00FF'
     },
 
     # 15. Vintage Paper
@@ -175,7 +209,9 @@ PALETTES = [
         'beta_prompt': '#DEB887', 'warning': '#D2691E',
         'data': '#BC8F8F', 'info': '#CD853F',
         'error': '#8B0000', 'success': '#556B2F',
-        'beta_reduction_step': '#FFF8DC'
+        'beta_reduction_step': '#FFF8DC',
+        'alpha_conversion_step': '#F5DEB3',
+        'security_prompt': '#FF00FF'
     },
 
     # 16. Candy Shop
@@ -184,7 +220,9 @@ PALETTES = [
         'beta_prompt': '#FF00FF', 'warning': '#FFD700',
         'data': '#00FF7F', 'info': '#7FFF00',
         'error': '#FF0000', 'success': '#00FF00',
-        'beta_reduction_step': '#FFB6C1'
+        'beta_reduction_step': '#FFB6C1',
+        'alpha_conversion_step': '#FF85C1',
+        'security_prompt': '#FF00FF'
     },
 
     # 17. Deep Space
@@ -193,7 +231,9 @@ PALETTES = [
         'beta_prompt': '#483D8B', 'warning': '#FFD700',
         'data': '#000080', 'info': '#87CEEB',
         'error': '#8B0000', 'success': '#3CB371',
-        'beta_reduction_step': '#F0F8FF'
+        'beta_reduction_step': '#F0F8FF',
+        'alpha_conversion_step': '#5F9EA0',
+        'security_prompt': '#FF00FF'
     },
 
     # 18. Autumn Leaves
@@ -202,7 +242,9 @@ PALETTES = [
         'beta_prompt': '#A0522D', 'warning': '#FF4500',
         'data': '#8B4513', 'info': '#DEB887',
         'error': '#8B0000', 'success': '#556B2F',
-        'beta_reduction_step': '#FFDAB9'
+        'beta_reduction_step': '#FFDAB9',
+        'alpha_conversion_step': '#DAA520',
+        'security_prompt': '#FF00FF'
     },
 
     # 19. Bioluminescent
@@ -211,7 +253,9 @@ PALETTES = [
         'beta_prompt': '#FF69B4', 'warning': '#FFFF00',
         'data': '#40E0D0', 'info': '#00FA9A',
         'error': '#FF0000', 'success': '#00FF00',
-        'beta_reduction_step': '#FF00FF'
+        'beta_reduction_step': '#FF00FF',
+        'alpha_conversion_step': '#00FFCC',
+        'security_prompt': '#FF00FF'
     },
 
     # 20. Monochrome
@@ -220,7 +264,9 @@ PALETTES = [
         'beta_prompt': '#808080', 'warning': '#A0A0A0',
         'data': '#202020', 'info': '#505050',
         'error': '#000000', 'success': '#B0B0B0',
-        'beta_reduction_step': '#D0D0D0'
+        'beta_reduction_step': '#D0D0D0',
+        'alpha_conversion_step': '#909090',
+        'security_prompt': '#FF00FF'
     }
 ]
 
@@ -235,7 +281,9 @@ LABELS = {
     'info': 'INFO',
     'error': 'ERR!',
     'success': 'DONE',
-    'beta_reduction_step': 'BSTP'
+    'alpha_conversion_step': 'ASTP',
+    'beta_reduction_step': 'BSTP',
+    'security_prompt': 'SEC!'
 }
 
 IOSYMBOL = {
@@ -247,9 +295,11 @@ IOSYMBOL = {
     'info': '→',  # Right arrow
     'error': '→',  # Right arrow
     'success': '→',  # Right arrow
-    'beta_reduction_step': '→'  # Right arrow
+    'alpha_conversion_step': '→',  # Right arrow
+    'beta_reduction_step': '→',  # Right arrow
+    'security_prompt': '→'  # Right arrow
 }
 
-
+# MARK: IO Label Function
 def IO_label(index, counter):
     return status_label('%' + str(counter), COLORS[index]) + ' ' + status_label(LABELS[index] + ' ' + IOSYMBOL[index], COLORS[index], False)

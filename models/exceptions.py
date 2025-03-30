@@ -71,3 +71,16 @@ class InvalidTermError(Exception):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.term!r})"
+
+class UserCancelledOperation(Exception):
+    """Exception raised when a user cancels an operation."""
+    
+    def __init__(self, message="Operation cancelled by user"):
+        self.message = message
+        super().__init__(message)
+    
+    def __str__(self):
+        return self.args[0]
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.message!r})"
