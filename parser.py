@@ -5,7 +5,6 @@
 # 
 # Makabaka1880, 2025. All rights reserved.
 
-from colorist import Color, Effect
 from utils.persistence import TermDB
 from utils.history import HistoryStore
 from models.model import *

@@ -12,7 +12,6 @@ from typing import Optional, List
 from utils.history import HistoryStore
 from models.model import Term
 from models.exceptions import InvalidTermError, ParseError
-from colorist import Color, Effect
 from dotenv import load_dotenv
 import os
 import re

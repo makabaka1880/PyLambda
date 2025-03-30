@@ -1,3 +1,2 @@
-colorist
 pyreadline
 dotenv

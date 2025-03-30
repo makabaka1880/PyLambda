@@ -6,7 +6,6 @@
 # Makabaka1880, 2025. All rights reserved.
 
 import readline
-from colorist import Color, Effect
 from models.model import Term, Abstraction, Variable, Application
 from preproc import normalize_blank
 from parser import *
