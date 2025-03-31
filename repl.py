@@ -53,9 +53,6 @@ class REPLSession:
 class REPLInterface:
     """User interface components"""
     
-    def init_readline():
-        pass
-    
     @staticmethod
     def get_lambda_prompt() -> str:
         return f"{IO_label('lambda_prompt', counter)} "
