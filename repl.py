@@ -107,8 +107,6 @@ class REPLInterface:
 
 interface = REPLInterface()
 
-REPLInterface.init_readline()
-
 class CommandHandler:
     """Handle different REPL commands"""
     def __init__(self, session):
