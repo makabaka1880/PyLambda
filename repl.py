@@ -352,7 +352,7 @@ def main():
     handler = CommandHandler(session)
     # for color, label in zip(COLORS.values(), LABELS.values()):
     #     print(f"{color_text(f'{label}', color, bg=True)}", end=' ')
-    print()
+    # print()
     while session.running:
         try:
             print(status_label(f'%{counter}', None), end=' ')
