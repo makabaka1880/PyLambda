@@ -187,26 +187,26 @@ class CommandHandler:
         # Store output_var in session
         self.session.output_var = output_var
 
-        if term := self.session.db.get_term(term_part):
-            self.session.current_term = term
-        elif term_part.startswith('%'):  # Check if it's a history reference
-            try:
-                self.session.current_term = self.session.history.fetch(int(term_part[1:]))
-            except KeyError:
-                raise ValueError(f"History entry {term_part} not found")
-        else:
-            self.session.current_term = parse_term(term_part)
+        self.session.current_term = parse_term(term_part)
 
-        return f"{bold_text('Reducing')}{' ' * filler(width(), 'Reducing', str(self.session.current_term))}{str(self.session.current_term)}", term
+        return f"{bold_text('Reducing')}{' ' * filler(width(), 'Reducing', str(self.session.current_term))}{str(self.session.current_term)}", self.session.current_term
 
     def handle_literal(self, args, decorator=None):
-        """Shows content of term in PyLambda literal"""
-        forced = (decorator == '!')
+        """Shows literal content of term in PyLambda literal"""
+        forced = (decorator != '?')
         identifier = args.strip().split()[0]
-        if term := self.session.db.get_term(identifier) \
-            or self._resolve_reference(identifier):
+        if forced:
+            term = parse_term(identifier)
             return term.literal(), term
-        return None, None
+        else:
+            objs = ""
+            for t in self.session.db.get_all_terms(identifier):
+                objs += bold_text(t[0].__repr__()[1:-1])
+                objs += '   '
+                objs += t[1].__repr__()
+                objs += '\n'
+            return objs, None
+
     
     def handle_tree(self, args, decorator=None):
         """Method to output a string of a tree representation of term"""
@@ -217,7 +217,7 @@ class CommandHandler:
     
     def handle_delete(self, args, decorator=None):
         """Handle DEL command with optional regex"""
-        forced = (decorator == '!')
+        forced = (decorator != '?')
         identifier = args.strip().split()[0]
         if not forced:
             if check_for_dangerous_regex_pattern(identifier):
@@ -251,17 +251,11 @@ class CommandHandler:
         
     def handle_show(self, args, decorator=None):
         """Shows mathematical representation of content of term."""
-        forced = (decorator == '!')
+        forced = (decorator != '?')
         parts = args.strip().split(maxsplit=1)
         identifier = parts[0]
-        if term := self.session.db.get_term(identifier):
-            return term, term
-        elif identifier.startswith('%'):  # Check if it's a history reference
-            try:
-                term = self.session.history.fetch(int(identifier[1:]))
-                return term, term
-            except KeyError:
-                raise ValueError(f"History entry {identifier} not found")
+        term = parse_term(identifier)
+
         return None, None
     
     def handle_list(self, args, decorator=None):
@@ -275,7 +269,7 @@ class CommandHandler:
                 for ns in namespaces:
                     interface.print_raw(f"  {ns}")
                 return "Namespace query done", None
-        forced = (decorator == '!')
+        forced = (decorator != '?')
         if len(args) > 0:
             terms = self.session.db.get_all_terms(args, forced=forced)
         else:
@@ -358,11 +352,11 @@ def main():
             print(status_label(f'%{counter}', None), end=' ')
             print(filler(width(), f'[%{counter}] ', regard_labels=False) * '-')
             line = input(interface.get_lambda_prompt()).strip()
+            readline.add_history(line)
             if not line:
                 continue
             decorator = line[0]
-            line = line[1:] if decorator in ['!', '.'] else line
-            readline.add_history(line)
+            line = line[1:] if decorator in ['!', '.', '?'] else line
             commands = line.split(';')
             
             for cmd in commands:
