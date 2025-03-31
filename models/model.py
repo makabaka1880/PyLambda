@@ -144,7 +144,7 @@ class Variable(Term):
         raise ReductionOnNormalForm(term=self)
     
     def literal(self) -> str:
-        return f'({self.name})'
+        return f'{self.name}'
     
     def has_free(self, name: str) -> bool:
         """Checks if this variable matches the given name."""
@@ -297,7 +297,7 @@ class Application(Term):
             return Application(self.function, self.value.beta_reduce_step())
 
     def literal(self) -> str:
-        return f"({self.function.literal()} {self.value.literal()})"
+        return f"{self.function.literal()} ({self.value.literal()})"
     
     def tree_str(self, indent: str = "", last: bool = True, child: bool = False) -> str:
         lines = []

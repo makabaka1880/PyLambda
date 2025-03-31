@@ -17,6 +17,10 @@ from colors import *
 histore_temp = HistoryStore()
 db_temp = TermDB()
 
+def allowed_identifier(identifier: str) -> bool:
+    """Test whether if the given name is valid as an identifier."""
+    return True if re.fullmatch(r"^[A-Za-z][A-Za-z0-9_'-]*$", identifier) else False
+
 def parenthesis_match(literal: str) -> bool:
     count = 0
     for char in literal:
@@ -78,7 +82,7 @@ def clear_parenthesis(literal: str) -> str:
 def parse_variable(literal: str) -> Optional[Term]:
     """Parse a variable."""
     literal = clear_parenthesis(literal.strip())
-    if not re.fullmatch(r'^[a-zA-Z_]\w*$', literal):
+    if not allowed_identifier(literal):
         return None
     return Variable(literal)
 
@@ -104,7 +108,7 @@ def parse_abstraction(literal: str) -> Term:
         raise ParseError(f"Invalid abstraction: {literal}")
     
     var_part = clear_parenthesis(var_part.strip().lstrip('\\'))
-    if not re.fullmatch(r'^[a-zA-Z_]\w*$', var_part):
+    if not allowed_identifier(var_part):
         raise ParseError(f"Invalid parameter name: {var_part}")
     
     return Abstraction(Variable(var_part), parse_lambda(body_part.strip()))
@@ -201,6 +205,7 @@ def parse_application(literal: str) -> Term:
 
 if __name__ == "__main__":
     test_literals = [
+        r"(\f'. f') ((\x. x))",
         r"((\(n). ((\(f). ((\(x). ((f) (((n) (f)) (x))))))))) ((\(f). ((\(x). (x)))))",
         r"(\x. (x (x)))",  # Checks for variable-parameter name clash
         r"(((\x. ((x (x)))) (\y. ((y (y))))))",  # Infinite recursion
