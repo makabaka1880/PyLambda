@@ -7,6 +7,8 @@ A simple lambda calculus interpreter with beta-reduction capabilities.
 
 ## Deployment
 
+XTermJS-based Website [Here ->](https://pylambda.makabaka1880.xyz/#learn-lambda-calculus)
+
 ### Command-Line Interface
 
 To run PyLambda from the command line:
@@ -26,165 +28,28 @@ Docker support is currently under development.
 
 Commands in the REPL consist of a keyword and arguments. Keywords are case-insensitive, but arguments, especially those containing identifiers, are case-sensitive.
 
+### Lambda Term Literals
+
+Pylambda accepts definition of lambda terms as follows:
+
+#### Variables
+
+Directly provide the identifier.
+
+```
+
+### Command Keyword
 PyLambda supports the following commands:
 
-### Keywords
-#### `DEF`
+> **Sidenote**: If you run `help`, you get a list of currently available commands.
 
-Defines a variable and stores it in the local SQLite database.
+#### DEF / DEFINE
 
-**Usage:**
-```text
-λ > DEF func := (\x. \y. x (y))
+> Handle DEF command with session's DB.
+
+Defines a variable:
+
 ```
-
-This defines the lambda abstraction $\lambda x.\ \lambda y.\ x\ y$. In PyLambda, bound variables use Haskell-style syntax (backslash + identifier) for declaration.
-
----
-
-#### `RED`
-
-Performs $\beta$-reduction on a given application or abstraction.
-
-**Usage:**
-```text
-λ > RED (\x. \y. x) (a)
+[%0] [LMB? λ] DEF func := (\x. \f. f (x))
+[%0] [DONE →] Defined func
 ```
-
-This opens the **beta-reduction REPL** interface:
-
-```text
-λ > RED (\x. \y. x) (a)
-Reducing: ((\x. ((\y. (x))))) (a)
-Step 0: (λx. (λy. x)) a
-β > 
-Step 1: (λy. a)
-β > 
-Reached normal form
-λ > 
-```
-
-You can save the reduced form to a new variable:
-
-```text
-λ > RED (\x. \y. x) (a) > result
-Reducing: ((\x. ((\y. (x))))) (a)
-Step 0: (λx. (λy. x)) a
-β >
-Step 1: (λy. a)
-β >
-Reached normal form
-Auto-saved as "result"
-Saved final result as "result"
-λ >
-```
-
-Alternatively, save the result during the beta-reduction process:
-
-```text
-λ > RED (\x. \y. x) (a)
-Reducing: ((\x. ((\y. (x))))) (a)
-Step 0: (λx. (λy. x)) a
-β >
-Step 1: (λy. a)
-β > save > result
-Saved current term as "result"
-Step 1: (λy. a)
-β >
-Reached normal form
-λ >
-```
-
-To exit an unwanted recursion, use the `exit` command:
-
-```text
-λ > DEF omega := (\x. x (x))
-λ > RED omega (omega)
-Reducing: ((\x. ((x) (x)))) ((\x. ((x) (x))))
-Step 0: (λx. x x) (λx. x x)
-β >
-Step 1: (λx. x x) (λx. x x)
-β >
-Step 2: (λx. x x) (λx. x x)
-β > exit > fixedPointCombinatorExample
-Saved as "fixedPointCombinatorExample"
-λ >
-```
-
-Example with Church numerals:
-
-```text
-λ > DEF ChurchSucc := (\n. \f. \x. f (n (f) (x)) )
-λ > DEF C1 := (\f. \x. f(x))
-λ > RED ChurchSucc (C1) > C2
-Reducing: (ChurchSucc) ((\f. ((\x. ((f) (x))))))
-Step 0: ChurchSucc (λf. (λx. f x))
-β >
-Reached normal form
-Auto-saved as "C2"
-Saved final result as "C2"
-λ > SHOW ChurchSucc; SHOW C1; SHOW C2;
-(λn. (λf. (λx. f n f x)))
-(λf. (λx. f x))
-ChurchSucc (λf. (λx. f x))
-λ >
-```
-
----
-
-#### `LIST` / `LS`
-
-Lists all terms stored in the database.
-
-**Usage:**
-```text
-λ + ls
-C3: (λf. (λx. (f (f (f x)))))
-IF: (λs. (λa. (λb. ((s a) b))))
-TRUE: (λx. (λy. x))
-FALSE: (λx. (λy. y))
-omega_x: (λx. (x x))
-Omega_x: ((λx. (x x)) (λx. (x x)))
-FixedPointCombinatorExample: ((λx. (x x)) (λx. (x x)))
-C1: (λf. (λx. (f x)))
-succ: (λn. (λf. (λx. (f ((n f) x)))))
-C2: (λf. (λx. (f (f x))))
-```
-
-`LIST` 
----
-
-#### `SHOW` / `DISPLAY`
-
-Displays the content of a variable using Unicode to represent the lambda abstraction.
-
-**Usage:**
-```text
-λ + ls
-C3: (λf. (λx. (f (f (f x)))))
-IF: (λs. (λa. (λb. ((s a) b))))
-TRUE: (λx. (λy. x))
-FALSE: (λx. (λy. y))
-omega_x: (λx. (x x))
-Omega_x: ((λx. (x x)) (λx. (x x)))
-FixedPointCombinatorExample: ((λx. (x x)) (λx. (x x)))
-C1: (λf. (λx. (f x)))
-succ: (λn. (λf. (λx. (f ((n f) x)))))
-C2: (λf. (λx. (f (f x))))
-λ + show C2
-(λf. (λx. (f (f x))))
-λ +
-```
-
----
-
-#### `EXIT`
-
-Exits the REPL interface.
-
----
-
-#### `HELP`
-
-This command is not yet implemented.
-

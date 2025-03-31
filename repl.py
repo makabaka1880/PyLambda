@@ -212,10 +212,8 @@ class CommandHandler:
         """Method to output a string of a tree representation of term"""
         forced = (decorator == '!')
         identifier = args.strip().split()[0]
-        if term := self.session.db.get_term(identifier) \
-            or self._resolve_reference(identifier):
-            return term.tree_str(), term
-        return None, None
+        term = parse_term(identifier)
+        return term.tree_str(), term
     
     def handle_delete(self, args, decorator=None):
         """Handle DEL command with optional regex"""
