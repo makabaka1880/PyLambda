@@ -350,8 +350,8 @@ def main():
     session = REPLSession()
     session.history.clear()
     handler = CommandHandler(session)
-    for color, label in zip(COLORS.values(), LABELS.values()):
-        print(f"{color_text(f'{label}', color, bg=True)}", end=' ')
+    # for color, label in zip(COLORS.values(), LABELS.values()):
+    #     print(f"{color_text(f'{label}', color, bg=True)}", end=' ')
     print()
     while session.running:
         try:
