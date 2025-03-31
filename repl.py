@@ -44,7 +44,6 @@ class REPLSession:
         self._init_standard_library()
 
     def _init_standard_library(self):
-        from parser import parse_term
         """Store built-in terms in DB"""
         std_terms = {
         }
@@ -170,7 +169,7 @@ class CommandHandler:
             identifier, literal = args.split(':=', 1)
             identifier = identifier.strip()
             # Access DB via session
-            term = parse_term(literal, self.session.db, self.session.history)
+            term = parse_term(literal)
             self.session.db.insert_term(identifier, term)
             return f"Defined {identifier}", term
             
@@ -201,7 +200,7 @@ class CommandHandler:
             except KeyError:
                 raise ValueError(f"History entry {term_part} not found")
         else:
-            self.session.current_term = parse_term(term_part, self.session.db, self.session.history)
+            self.session.current_term = parse_term(term_part)
 
         return f"{bold_text('Reducing')}{' ' * filler(width(), 'Reducing', str(self.session.current_term))}{str(self.session.current_term)}", term
 
