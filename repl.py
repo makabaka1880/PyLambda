@@ -17,6 +17,7 @@ from utils.security import check_for_dangerous_regex_pattern
 import os
 import subprocess
 import re
+from devconst import *;
 
 counter = 0
 
@@ -246,8 +247,9 @@ class CommandHandler:
         return f"Namespace {args} imported", None
 
     def handle_save_namespace(self, args, decorator=None):
-        """Handles namespace saving"""
+        """Handles namespace saving - UNDER DEV"""
         forced = (decorator == "!")
+        return WARNING_FEATURE_UNDER_DEVELOPMENT, None
         
     def handle_show(self, args, decorator=None):
         """Shows mathematical representation of content of term."""
@@ -366,6 +368,9 @@ def main():
                         
                 keyword, args = normalize_blank(cmd)
                 response, term = handler.execute((keyword.upper(), args), decorator)
+                if response == WARNING_FEATURE_UNDER_DEVELOPMENT:
+                    interface.show_warning(f'Command {keyword.upper()} is under development.')
+                    continue
                 
                 if term:
                     session.history.insert(counter, term.literal())
