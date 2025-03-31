@@ -63,7 +63,7 @@ class HistoryStore:
     # MARK: Fetch Entry
     def fetch(self, index: int) -> Term:
         """Get literal by index, raises IndexError if missing"""
-        from parser import parse_lambda
+        from parser import parse_term
         from utils.persistence import TermDB
         
         # Validate index
@@ -77,9 +77,13 @@ class HistoryStore:
         ''', (index,))
         
         if result := cursor.fetchone():
-            return parse_lambda(result[0], TermDB(), self)
+            return parse_term(result[0], TermDB(), self)
         else:
             raise IndexError(f"Index {index} not found in history")
+    def list_entries(self) -> list[tuple[str, str]]:
+        """Return a list of tuples with index in the form %n and the corresponding term."""
+        cursor = self.conn.execute('SELECT id, literal FROM history')
+        return [(f"%{row[0]}", row[1]) for row in cursor.fetchall()]
 
     # MARK: Close Connection
     def close(self):

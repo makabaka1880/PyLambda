@@ -24,9 +24,10 @@ def fresh_variable(base: str, crit: Callable[[str], bool]) -> str:
         >>> fresh_variable("z", lambda s: s == "z")
         "z'"
     """
-    while crit(base):
-        base += "'"
-    return base
+    base_ = base
+    while crit(base_):
+        base_ += "'"
+    return base_
 
 class Term:
     """Abstract base class for lambda calculus terms.
@@ -353,6 +354,6 @@ church_succ = Abstraction(
 
 if __name__ == "__main__":
     print(church_succ.tree_str())
-    from parser import parse_lambda
-    weirdCombinator = parse_lambda(r"((\n. (n) (n))) ((\y. (\z. (y) ((y) (z)))))")
+    from parser import parse_term
+    weirdCombinator = parse_term(r"((\n. (n) (n))) ((\y. (\z. (y) ((y) (z)))))")
     print(weirdCombinator.tree_str())

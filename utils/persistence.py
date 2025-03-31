@@ -57,7 +57,7 @@ class TermDB:
         row = cursor.fetchone()
         if row:
             try:
-                return parse_lambda(row[0], self, HistoryStore())
+                return parse_lambda(row[0])
             except ParseError as e:
                 raise ParseError(f"Invalid term {identifier}") from e
         return None
@@ -98,6 +98,11 @@ class TermDB:
                 VALUES (?, ?)
             ''', (identifier, term.literal()))
         self.conn.commit()
+    
+    # MARK: Get All Var Names 
+    def get_vars(self) -> List[str]:
+        cursor = self.conn.execute('SELECT identifier FROM base')
+        return [row[0] for row in cursor.fetchall()]
     
     # MARK: Term Querying
     def get_all_terms(
@@ -145,7 +150,7 @@ class TermDB:
                         continue
 
             try:
-                term = parse_lambda(literal, self, HistoryStore())
+                term = parse_lambda(literal)
                 results.append((identifier, term))
             except ParseError as e:
                 if not skip_invalid:
