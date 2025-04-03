@@ -253,7 +253,7 @@ class CommandHandler:
         name = args
         self.session.db.save_namespace(name, forced)
         print(name)
-        return WARNING_FEATURE_UNDER_DEVELOPMENT, None
+        return 'Namespace created successfully.\nUpon usage, execute ' + italic_text('USE ' + name + ';'), None
         
     def handle_show(self, args, decorator=None):
         """Shows mathematical representation of content of term."""

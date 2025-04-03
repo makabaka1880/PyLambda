@@ -335,5 +335,8 @@ Fixed point reached:
 - **Apr. 4**
     - COMMIT 26ab8c620221280b088b6fae86ff2064f39ed8c7
         - *terms.db* Added standard namespace `numerals`, `booleans`, and `list`
-    - COMMIT *
+    - COMMIT 6453977419bb1335d445394c3920bf41f70ba3b7
         - *terms.db* Added standard namespace `combinators`
+        - *repl.py* Done command handler for command `USE`
+    - COMMIT
+        - *terms.db* Added terms `ADD`, `MINUS`, `PRED`, `TIME` to std namespace `numerals`
