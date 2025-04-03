@@ -1,7 +1,7 @@
 # PyLambda
 
 > **Latest Update**  
-> Added automatic $\alpha$-conversion to avoid variable capture. Enabled by default.
+> Added methods to directly manipulate terms like extractions and conversions
 
 A simple lambda calculus interpreter with beta-reduction capabilities.
 
@@ -549,6 +549,9 @@ Or the force decorator `!` to forcefully perform the conversion
         - *repl.py* Done command handler for command `USE`
     - COMMIT 474afffe0d057df5d5973623334afdcbe89edc85
         - *terms.db* Added terms `ADD`, `MINUS`, `PRED`, `TIME` to std namespace `numerals`
-    - COMMIT
+    - COMMIT a539533cbf900cc303378bc19e5945589aed6347
         - *repl.py* Added methods for `EXTRACT_BODY`, `EXTRACT_VARIABLE`, `EXTRACT_FUNCTION`, `EXTRACT_VALUE`, `ALPHA_CONVERT` and introduced smart decorator `+`
         - *README.md* Added manual for `EXTRACT_BODY`, `EXTRACT_VARIABLE`, `EXTRACT_FUNCTION`, `EXTRACT_VALUE`, `ALPHA_CONVERT`
+    - COMMIT
+        - *README.md* Updated `latest` blockquote
+        - *WEB* Added manual that clones from this README
