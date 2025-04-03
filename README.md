@@ -331,3 +331,5 @@ Fixed point reached:
 - **Apr. 3** Major fixes:
     - *repl.py* Fixed return type for `SHOW` command handler 
     - *parser.py* Fixed history marker (`%[0-9]+`) parsing
+- **Apr. 4** Major additions:
+    - *terms.db* Added standard namespace `numerals`, `booleans`, and `list`
