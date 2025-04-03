@@ -82,8 +82,9 @@ class HistoryStore:
             raise IndexError(f"Index {index} not found in history")
     def list_entries(self) -> list[tuple[str, str]]:
         """Return a list of tuples with index in the form %n and the corresponding term."""
+        from parser import parse_lambda
         cursor = self.conn.execute('SELECT id, literal FROM history')
-        return [(f"%{row[0]}", row[1]) for row in cursor.fetchall()]
+        return [(f"%{row[0]}", parse_lambda(row[1])) for row in cursor.fetchall()]
 
     # MARK: Close Connection
     def close(self):

@@ -19,7 +19,7 @@ db_temp = TermDB()
 
 def allowed_identifier(identifier: str) -> bool:
     """Test whether if the given name is valid as an identifier."""
-    return True if re.fullmatch(r"^[A-Za-z][A-Za-z0-9_'-]*$", identifier) else False
+    return True if re.fullmatch(r"^[A-Za-z][A-Za-z0-9_'-]*$|^%[0-9]+$", identifier) else False
 
 def parenthesis_match(literal: str) -> bool:
     count = 0

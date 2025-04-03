@@ -258,7 +258,7 @@ class CommandHandler:
         identifier = parts[0]
         term = parse_term(identifier)
 
-        return None, None
+        return term.__repr__(), term
     
     def handle_list(self, args, decorator=None):
         """Lists all terms in the database"""

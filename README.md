@@ -326,3 +326,8 @@ Fixed point reached:
 [%0] [DATA →]                 ├── f
 [%0] [DATA →]                 └── x
 ```
+
+## Changelog
+- **Apr. 3** Major fixes:
+    - *repl.py* Fixed return type for `SHOW` command handler 
+    - *parser.py* Fixed history marker (`%[0-9]+`) parsing
