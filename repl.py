@@ -126,6 +126,12 @@ class CommandHandler:
             'del': self.handle_delete,
             'use': self.handle_namespace_use,
             'save': self.handle_save_namespace,
+            'body': self.handle_extract_body,
+            'var': self.handle_extract_var,
+            'func': self.handle_extract_func,
+            'val': self.handle_extract_val,
+            'type': self.handle_show_type,
+            'alpha': self.handle_alpha_conversion,
             
             # Shorthand aliases
             'ls': self.handle_list,      # list
@@ -140,9 +146,16 @@ class CommandHandler:
             'literal': self.handle_literal,
             'delete': self.handle_delete,
             'namespace': self.handle_namespace_use,
+            'extract_body': self.handle_extract_body,
+            'extract_variable': self.handle_extract_var,
+            'extract_function': self.handle_extract_func,
+            'extract_value': self.handle_extract_val,
+            'alpha_convert': self.handle_alpha_conversion,
+            
             # Common alternatives
             'run': self.handle_red,      # alternative to reduce
-            'display': self.handle_show  # alternative to show
+            'display': self.handle_show,  # alternative to show
+            'rename': self.handle_alpha_conversion # alternative to alpha_convert
         }
         
     def _resolve_reference(self, identifier: str) -> Term:
@@ -264,6 +277,18 @@ class CommandHandler:
 
         return term.__repr__(), term
     
+    def handle_show_type(self, args, decorator=None):
+        """Shows the type of term"""
+        term = parse_term(args)
+        if isinstance(term, Variable):
+            return 'TYPE <VAR>', term
+        if isinstance(term, Abstraction):
+            return 'TYPE <ABSTRACTION>', term
+        if isinstance(term, Application):
+            return 'TYPE <APPLICATION>', term
+        
+        return 'WTF???', term
+    
     def handle_list(self, args, decorator=None):
         """Lists all terms in the database"""
         if decorator == '.':
@@ -290,7 +315,130 @@ class CommandHandler:
             return "\n".join(lines), None
         
         return "No terms found", None
-            
+    def handle_extract_body(self, args, decorator=None):
+        """Extracts the body term of an lambda abstraction."""
+        args = args.split('>');
+        if len(args) == 2:
+            destination = args[1]
+        elif len(args) == 1:
+            destination = None
+        else:
+            raise UnexpectedArgsError(args)
+        
+        expr = args[0]
+        term = parse_term(expr)
+        
+        if isinstance(term, Abstraction):
+            term = term.body
+            if destination:
+                self.session.db.insert_term(destination, term)
+                return str(term) + '\n' + 'Saving body to ' + italic_text(destination), term
+            else:
+                return str(term), term
+        else:
+            raise TypeError('Term is not of type ' + italic_text('Abstraction'))
+        
+    def handle_extract_var(self, args, decorator=None):
+        """Extracts the variable of a lambda abstraction."""
+        args = args.split('>')
+        if len(args) == 2:
+            destination = args[1]
+        elif len(args) == 1:
+            destination = None
+        else:
+            raise UnexpectedArgsError(args)
+
+        expr = args[0]
+        term = parse_term(expr)
+
+        if isinstance(term, Abstraction):
+            variable = term.var
+            if destination:
+                self.session.db.insert_term(destination, variable)
+                return str(variable) + '\n' + 'Saving variable to ' + italic_text(destination), variable
+            else:
+                return str(variable), variable
+        else:
+            raise TypeError('Term is not of type ' + italic_text('Abstraction'))
+
+    def handle_extract_func(self, args, decorator=None):
+        """Extracts the function part of an application."""
+        args = args.split('>')
+        if len(args) == 2:
+            destination = args[1]
+        elif len(args) == 1:
+            destination = None
+        else:
+            raise UnexpectedArgsError(args)
+
+        expr = args[0]
+        term = parse_term(expr)
+
+        if isinstance(term, Application):
+            function = term.function
+            if destination:
+                self.session.db.insert_term(destination, function)
+                return str(function) + '\n' + 'Saving function to ' + italic_text(destination), function
+            else:
+                return str(function), function
+        else:
+            raise TypeError('Term is not of type ' + italic_text('Application'))
+        
+    def handle_extract_val(self, args, decorator=None):
+        """Extracts the value part of an application."""
+        args = args.split('>')
+        if len(args) == 2:
+            destination = args[1]
+        elif len(args) == 1:
+            destination = None
+        else:
+            raise UnexpectedArgsError(args)
+
+        expr = args[0]
+        term = parse_term(expr)
+
+        if isinstance(term, Application):
+            value = term.value
+            if destination:
+                self.session.db.insert_term(destination, value)
+                return str(value) + '\n' + 'Saving value to ' + italic_text(destination), value
+            else:
+                return str(value), value
+        else:
+            raise TypeError('Term is not of type ' + italic_text('Application'))
+    
+    def handle_alpha_conversion(self, args, decorator=None):
+        """Computes alpha conversion on the abstraction"""
+        correct = (decorator == '+')
+        forced = (decorator == '!')
+        args = args.split('<');
+        if len(args) != 2:
+            raise UnexpectedArgsError(args)
+        
+        term = parse_term(args[0]); name = args[1];
+        
+        try:
+            names = self.session.db.get_vars()
+            if name in names and not correct:
+                if not forced:
+                    raise IdentifierNameClash(name)
+                else:
+                    interface.show_warning('Possibility of identifier clash overriden with decorator !: identifier ' + italic_text(name))
+            elif correct:
+                name = fresh_variable(name, lambda x: x in names)
+        except Exception as e:
+            interface.show_error('Exception caught while catching for identifier name clash')
+            interface.show_error(e)
+        
+        if not isinstance(term, Abstraction):
+            raise TypeError('Term is not of type ' + italic_text('Abstraction'))
+
+        term = term.alpha_conversion(name)
+        
+        return str(term), term
+        
+        
+        
     def handle_help(self, _, decorator=None):
         """Show dynamically generated help information"""
         forced = (decorator == '!')
@@ -362,7 +510,7 @@ def main():
             if not line:
                 continue
             decorator = line[0]
-            line = line[1:] if decorator in ['!', '.', '?'] else line
+            line = line[1:] if decorator in ['!', '.', '?', '+'] else line
             commands = line.split(';')
             
             for cmd in commands:
@@ -547,6 +695,50 @@ def main():
                         interface.show_success(response)
                     else:
                         interface.show_error(f'Definition failed for {italic_text(args)}')
+                
+                if keyword.upper() in ['TYPE']:
+                    if decorator == '!':
+                        interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('TYPE')} command.')
+                    if response:
+                        interface.print_raw(response)
+                    else:
+                        interface.show_error(f"Type extraction failed for {italic_text(args)}")
+                
+                if keyword.upper() in ['VAR', 'EXTRACT_VARIABLE']:
+                    if decorator == '!':
+                        interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('EXTRACT_VARIABLE')} command.')
+                    if response:
+                        interface.print_raw(response)
+                    else:
+                        interface.show_error(f"Variable extraction failed for {italic_text(args)}")
+                
+                if keyword.upper() in ['BODY', 'EXTRACT_BODY']:
+                    if decorator == '!':
+                        interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('EXTRACT_BODY')} command.')
+                    if response:
+                        interface.print_raw(response)
+                    else:
+                        interface.show_error(f"Body extraction failed for {italic_text(args)}")
+                
+                if keyword.upper() in ['VAL', 'EXTRACT_VALUE']:
+                    if decorator == '!':
+                        interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('EXTRACT_VALUE')} command.')
+                    if response:
+                        interface.print_raw(response)
+                    else:
+                        interface.show_error(f"Value extraction failed for {italic_text(args)}")
+                
+                if keyword.upper() in ['FUNC', 'EXTRACT_FUNCTION']:
+                    if decorator == '!':
+                        interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('EXTRACT_FUNCTION')} command.')
+                    if response:
+                        interface.print_raw(response)
+                    else:
+                        interface.show_error(f"Function extraction failed for {italic_text(args)}")
+                
+                if keyword.upper() in ['ALPHA', 'ALPHA_CONVERT', 'RENAME']:
+                    interface.print_raw(response)
+                
                 if keyword.upper() in ['HELP', 'H']:
                     if decorator == '!':
                         interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('HELP')} command.')

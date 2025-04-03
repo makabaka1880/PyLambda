@@ -58,6 +58,35 @@ class FixedPointDetected(Exception):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.term!r})"
 
+class UnexpectedArgsError(Exception):
+    """Exception raised when unexpected arguments are encountered."""
+    
+    def __init__(self, args=None, message="Unexpected arguments provided"):
+        self.args = args
+        self.message = message
+        super().__init__(message)
+    
+    def __str__(self):
+        return self.args[0] if self.args else self.message
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.args!r})"
+
+class IdentifierNameClash(Exception):
+    """Exception raised when two identifiers in a lambda term clash."""
+    
+    def __init__(self, identifier=None, message="Identifier name clash detected"):
+        self.identifier = identifier
+        self.message = message
+        super().__init__(message)
+    
+    def __str__(self):
+        return self.args[0]
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.identifier!r})"
+
+
 class InvalidTermError(Exception):
     """Exception raised when a lambda term is invalid or malformed."""
     

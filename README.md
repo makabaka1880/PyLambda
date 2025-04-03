@@ -49,6 +49,7 @@ Use Haskell's lambda syntax: backslash + bound variable + body. Currying is allo
 [%0] [LMB? λ] TREE (\x. x)
 [%0] [DATA →] Abstraction λ x
 [%0] [DATA →]     └── x
+
 [%1] [LMB? λ] TREE (\x. \y. x (y))
 [%1] [DATA →] Abstraction λ x
 [%1] [DATA →]     └── λ y
@@ -256,9 +257,10 @@ After you see the beta prompt, you can either press enter:
 
 ```
 [%0] [LMB? λ] RED succ (C1);
-[%0] [INFO →] Reducing           ((λn. (λf. (λx. (f ((n f) x))))) (λf. (λx. (f x))))
+[%0] [INFO →] Reducing          ((λn. (λf. (λx. (f ((n f) x))))) (λf. (λx. (f x))))
 [%0] [BSTP →] β →               ((λn. (λf. (λx. (f ((n f) x))))) (λf. (λx. (f x))))
 [%0] [BET? β] beta
+
 [%1] [BSTP →] β →                         (λf. (λx. (f (((λf. (λx. (f x))) f) x))))
 [%1] [BET? β] 
 ```
@@ -272,13 +274,16 @@ You can continue this until the reducer proved that this is the normal form or i
 Normal form reached:
 ```
 [%0] [LMB? λ] RED succ (C1);
-[%0] [INFO →] Reducing           ((λn. (λf. (λx. (f ((n f) x))))) (λf. (λx. (f x))))
+[%0] [INFO →] Reducing          ((λn. (λf. (λx. (f ((n f) x))))) (λf. (λx. (f x))))
 [%0] [BSTP →] β →               ((λn. (λf. (λx. (f ((n f) x))))) (λf. (λx. (f x))))
 [%0] [BET? β] beta
+
 [%1] [BSTP →] β →                         (λf. (λx. (f (((λf. (λx. (f x))) f) x))))
 [%1] [BET? β] beta
+
 [%2] [BSTP →] β →                                   (λf. (λx. (f ((λx. (f x)) x))))
 [%2] [BET? β] beta
+
 [%3] [BSTP →] β →                                             (λf. (λx. (f (f x))))
 [%3] [BET? β] beta
 [%3] [DONE →] Reached normal form
@@ -293,6 +298,7 @@ Fixed point reached:
 [%4] [INFO →] Reducing                                    ((λx. (x x)) (λx. (x x)))
 [%4] [BSTP →] β                                           ((λx. (x x)) (λx. (x x)))
 [%4] [BET? β] beta
+
 [%5] [BSTP →] β →                                         ((λx. (x x)) (λx. (x x)))
 [%5] [DONE →] Reduction reached fixed point
 [%5] [INFO →] Current literal: 
@@ -302,7 +308,210 @@ Fixed point reached:
 #### SAVE
 > Handles namespace saving
 
-*FEATURE UNDER DEVELOPMENT*
+Pass the name of the namespace you want to save.
+
+```
+[%0] [LMB? λ] ls
+[%0] [WARN →] Empty literal returned from handler, skipping history insertion for %0.
+[%0] [DATA →] HI                                                      (hello world)
+
+[%1] [LMB? λ] save hello_world;
+hello_world
+[%1] [WARN →] Empty literal returned from handler, skipping history insertion for %1.
+```
+
+Now in another run:
+
+```
+[%0] [LMB? λ] ls
+[%0] [WARN →] Empty literal returned from handler, skipping history insertion for %0.
+[%0] [DATA →] A                                               (λh. (λg. (g (h g))))
+[%0] [DATA →] B                                                   (λj. (λk. (j k)))
+
+[%1] [LMB? λ] .ls
+[%1] [DATA →] Available namespaces:
+[%1] [DATA →]   booleans
+[%1] [DATA →]   list
+[%1] [DATA →]   combinators
+[%1] [DATA →]   numerals
+[%1] [DATA →]   hello_world
+[%1] [WARN →] Empty literal returned from handler, skipping history insertion for %1.
+[%1] [DATA →] Namespace query done
+
+[%2] [LMB? λ] use hello_world;
+[%2] [WARN →] Empty literal returned from handler, skipping history insertion for %2.
+
+[%3] [LMB? λ] ls
+[%3] [WARN →] Empty literal returned from handler, skipping history insertion for %3.
+[%3] [DATA →] A                                                (λh. (λg. (g (h g))))
+[%3] [DATA →] B                                                    (λj. (λk. (j k)))
+[%3] [DATA →] HI                                                       (hello world)
+```
+
+### TYPE
+> Shows the type of term
+
+For variables, it outputs `TYPE <VAR>`
+
+```
+[%0] [LMB? λ] TYPE x;
+[%0] [DATA →] TYPE <VAR>
+```
+
+For abstractions it is `TYPE <ABSTRACTION>`
+
+```
+[%1] [LMB? λ] TYPE (\x. x);
+[%1] [DATA →] TYPE <ABSTRACTION>
+```
+
+For applications it return `TYPE <APPLICATION>`
+
+```
+[%2] [LMB? λ] TYPE x (x);
+[%2] [DATA →] TYPE <APPLICATION>
+```
+
+#### EXTRACT_BODY / BODY
+> Extracts the body term of an lambda abstraction.
+
+```
+[%0] [LMB? λ] EXTRACT_BODY (\var. body);
+[%0] [DATA →] body
+```
+
+It can be piped out to an variable using the `>` operator:
+
+```
+[%1] [LMB? λ] EXTRACT_BODY (\var. body) > BODY_TERM;
+[%1] [DATA →] body
+[%1] [DATA →] Saving body to BODY_TERM
+
+[%2] [LMB? λ] SHOW BODY_TERM;
+[%2] [INFO →] Terms matching BODY_TERM are found.
+[%2] [DATA →] body
+```
+
+Note that this raises an error when applying on a non-abstraction term.
+
+```
+[%3] [LMB? λ] EXTRACT_BODY func (val);
+[%3] [ERR! →] Term is not of type Abstraction
+```
+
+#### EXTRACT_VARIABLE / VAR
+> Extracts the bound variable of a lambda abstraction.
+
+```
+[%0] [LMB? λ] EXTRACT_VARIABLE (\var. body);
+[%0] [DATA →] var
+```
+
+It can be piped out to a variable using the `>` operator:
+
+```
+[%1] [LMB? λ] EXTRACT_VARIABLE (\var. body) > BOUND_VAR;
+[%1] [DATA →] var
+[%1] [DATA →] Saving var to BOUND_VAR
+
+[%2] [LMB? λ] SHOW BOUND_VAR;
+[%2] [INFO →] Terms matching BOUND_VAR are found.
+[%2] [DATA →] var
+```
+
+Note that this raises an error when applying on a non-abstraction term.
+
+```
+[%3] [LMB? λ] EXTRACT_VARIABLE func (val);
+[%3] [ERR! →] Term is not of type Abstraction
+```
+
+#### EXTRACT_FUNCTION / FUNC
+> Extracts the function part of an application.
+
+```
+[%0] [LMB? λ] EXTRACT_FUNCTION func (arg);
+[%0] [DATA →] func
+```
+
+It can be piped out to a variable using the `>` operator:
+
+```
+[%1] [LMB? λ] EXTRACT_FUNCTION func (arg) > FUNC_PART;
+[%1] [DATA →] func
+[%1] [DATA →] Saving func to FUNC_PART
+
+[%2] [LMB? λ] SHOW FUNC_PART;
+[%2] [INFO →] Terms matching FUNC_PART are found.
+[%2] [DATA →] func
+```
+
+Note that this raises an error when applying on a non-application term.
+
+```
+[%3] [LMB? λ] EXTRACT_FUNCTION (\x. x);
+[%3] [ERR! →] Term is not of type Application
+```
+#### EXTRACT_VALUE / VAL
+> Extracts the argument part of an application.
+
+```
+[%0] [LMB? λ] EXTRACT_VALUE func (arg);
+[%0] [DATA →] arg
+```
+
+It can be piped out to a variable using the `>` operator:
+
+```
+[%1] [LMB? λ] EXTRACT_VALUE func (arg) > ARG_PART;
+[%1] [DATA →] arg
+[%1] [DATA →] Saving arg to ARG_PART
+
+[%2] [LMB? λ] SHOW ARG_PART;
+[%2] [INFO →] Terms matching ARG_PART are found.
+[%2] [DATA →] arg
+```
+
+Note that this raises an error when applying on a non-application term.
+
+```
+[%3] [LMB? λ] EXTRACT_VALUE (\x. x);
+[%3] [ERR! →] Term is not of type Application
+```
+
+#### ALPHA_CONVERT / ALPHA / RENAME
+> Computes alpha conversion on the abstraction.
+
+The command utilizes the `<` operator. The new bound variable is on the right.
+
+```
+[%0] [LMB? λ] ALPHA_CONVERT (\a. a) < x;
+[%0] [DATA →] (λx. x)
+```
+
+When the new bound var collides with a identifier in the base namespace, the REPL raises and error:
+
+```
+[%1] [LMB? λ] ALPHA_CONVERT (\a. a) < HI;
+[%1] [ERR! →] Exception caught while catching for identifier name clash
+[%1] [ERR! →] Identifier name clash detected
+[%1] [DATA →] (λHI. HI)
+```
+
+You can use the smart decorator `+` to rename the bound variable to an available name:
+
+```
+[%2] [LMB? λ] +ALPHA_CONVERT (\a. a) < HI;
+[%2] [DATA →] (λHI'. HI')
+```
+
+Or the force decorator `!` to forcefully perform the conversion
+
+```
+[%3] [LMB? λ] !ALPHA_CONVERT (\a. a) < HI;
+[%3] [WARN →] Possibility of identifier clash overriden with decorator !: identifier HI
+[%3] [DATA →] (λHI. HI)
+```
 
 #### TREE
 > Method to output a string of a tree representation of term
@@ -338,5 +547,8 @@ Fixed point reached:
     - COMMIT 6453977419bb1335d445394c3920bf41f70ba3b7
         - *terms.db* Added standard namespace `combinators`
         - *repl.py* Done command handler for command `USE`
-    - COMMIT
+    - COMMIT 474afffe0d057df5d5973623334afdcbe89edc85
         - *terms.db* Added terms `ADD`, `MINUS`, `PRED`, `TIME` to std namespace `numerals`
+    - COMMIT
+        - *repl.py* Added methods for `EXTRACT_BODY`, `EXTRACT_VARIABLE`, `EXTRACT_FUNCTION`, `EXTRACT_VALUE`, `ALPHA_CONVERT` and introduced smart decorator `+`
+        - *README.md* Added manual for `EXTRACT_BODY`, `EXTRACT_VARIABLE`, `EXTRACT_FUNCTION`, `EXTRACT_VALUE`, `ALPHA_CONVERT`
