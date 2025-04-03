@@ -109,6 +109,7 @@ class REPLInterface:
 interface = REPLInterface()
 
 class CommandHandler:
+    session: REPLSession
     """Handle different REPL commands"""
     def __init__(self, session):
         self.session = session
@@ -249,6 +250,9 @@ class CommandHandler:
     def handle_save_namespace(self, args, decorator=None):
         """Handles namespace saving - UNDER DEV"""
         forced = (decorator == "!")
+        name = args
+        self.session.db.save_namespace(name, forced)
+        print(name)
         return WARNING_FEATURE_UNDER_DEVELOPMENT, None
         
     def handle_show(self, args, decorator=None):

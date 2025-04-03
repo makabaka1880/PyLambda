@@ -328,8 +328,12 @@ Fixed point reached:
 ```
 
 ## Changelog
-- **Apr. 3** Major fixes:
-    - *repl.py* Fixed return type for `SHOW` command handler 
-    - *parser.py* Fixed history marker (`%[0-9]+`) parsing
-- **Apr. 4** Major additions:
-    - *terms.db* Added standard namespace `numerals`, `booleans`, and `list`
+- **Apr. 3**
+    - COMMIT cf70c7b15545076fb3279faa3471e8dc65536eda:
+        - *repl.py* Fixed return type for `SHOW` command handler 
+        - *parser.py* Fixed history marker (`%[0-9]+`) parsing
+- **Apr. 4**
+    - COMMIT 26ab8c620221280b088b6fae86ff2064f39ed8c7
+        - *terms.db* Added standard namespace `numerals`, `booleans`, and `list`
+    - COMMIT *
+        - *terms.db* Added standard namespace `combinators`

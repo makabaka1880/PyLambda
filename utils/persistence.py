@@ -182,7 +182,7 @@ class TermDB:
             if not force:
                 raise ValueError(f"Namespace {name} exists. Use force decorator to overwrite")
             self.conn.execute(f'DROP TABLE {namespace_table}')
-            
+
         self.conn.execute(f'''
             CREATE TABLE {namespace_table} AS
             SELECT * FROM base
