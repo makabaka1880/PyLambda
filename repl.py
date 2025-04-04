@@ -132,6 +132,7 @@ class CommandHandler:
             'val': self.handle_extract_val,
             'type': self.handle_show_type,
             'alpha': self.handle_alpha_conversion,
+            'substitute': self.handle_substitution,
             
             # Shorthand aliases
             'ls': self.handle_list,      # list
@@ -139,6 +140,7 @@ class CommandHandler:
             'h': self.handle_help,       # help
             'q': self.handle_exit,       # exit
             'quit': self.handle_exit,    # exit
+            'sub': self.handle_substitution, # substitute
             
             # Full-length alternatives
             'define': self.handle_def,
@@ -151,6 +153,7 @@ class CommandHandler:
             'extract_function': self.handle_extract_func,
             'extract_value': self.handle_extract_val,
             'alpha_convert': self.handle_alpha_conversion,
+            'substitution': self.handle_substitution,
             
             # Common alternatives
             'run': self.handle_red,      # alternative to reduce
@@ -251,6 +254,49 @@ class CommandHandler:
             
         raise ValueError(f"Identifier {italic_text(identifier)} not found")
 
+    def handle_substitution(self, args, decorator=None):
+        """Handle substitution of term"""
+        forced = (decorator == '!')
+        if forced:
+            raise ValueError("Forced decorator '!' is not available for this command")
+        
+        # Parse substitution command
+        parts = args.split('<')
+        if '>' in args:
+            interface.show_warning(f'Operator {italic_text('>')} is used, do you mean {italic_text('<')}?')
+        
+        term_str = parts[0].strip()
+        term = parse_term(term_str)
+        
+        if len(parts) == 2:
+            _replacement = parts[1].strip().split(',', 1)
+            if len(_replacement) != 2:
+                raise UnexpectedArgsError(_replacement)
+            target_str, replacement_str = _replacement[0], _replacement[1];
+            
+
+            # Parse terms
+            replacement = parse_term(replacement_str)
+            if not (_ := parse_variable(target_str)):
+                raise ValueError(f'Target literal {italic_text(target_str)} is not a valid identifier')
+            
+            # Perform substitution
+            substituted_term = term.substitute(target_str, replacement)
+            
+            return str(substituted_term), substituted_term
+        
+        elif len(parts) == 1:
+            identifiers = self.session.db.get_all_terms();
+            for id in identifiers:
+                try:
+                    term = term.substitute(id[0], id[1])
+                except Exception as e:
+                    continue
+            return str(term), term
+        else:
+            raise UnexpectedArgsError(args)
+
+    
     def handle_namespace_use(self, args, decorator=None):
         """Handle namespace importing"""
         forced = (decorator == '!')
@@ -315,6 +361,7 @@ class CommandHandler:
             return "\n".join(lines), None
         
         return "No terms found", None
+    
     def handle_extract_body(self, args, decorator=None):
         """Extracts the body term of an lambda abstraction."""
         args = args.split('>');
@@ -739,6 +786,14 @@ def main():
                 if keyword.upper() in ['ALPHA', 'ALPHA_CONVERT', 'RENAME']:
                     interface.print_raw(response)
                 
+                if keyword.upper() in ['SUB', 'SUBSTITUTION', 'SUBSTITUTE']:
+                    if decorator == '!':
+                        interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('SUBSTITUTION')} command.')
+                    if response:
+                        interface.print_raw(response)
+                    else:
+                        interface.show_error(f"Substitution failed for {italic_text(args)}")
+
                 if keyword.upper() in ['HELP', 'H']:
                     if decorator == '!':
                         interface.show_warning(f'Force decorater \'!\' is not available for {italic_text('HELP')} command.')

@@ -348,7 +348,7 @@ Now in another run:
 [%3] [DATA →] HI                                                       (hello world)
 ```
 
-### TYPE
+#### TYPE
 > Shows the type of term
 
 For variables, it outputs `TYPE <VAR>`
@@ -482,7 +482,7 @@ Note that this raises an error when applying on a non-application term.
 #### ALPHA_CONVERT / ALPHA / RENAME
 > Computes alpha conversion on the abstraction.
 
-The command utilizes the `<` operator. The new bound variable is on the right.
+The command utilizes the left-assignment `<` operator. The new bound variable is on the right.
 
 ```
 [%0] [LMB? λ] ALPHA_CONVERT (\a. a) < x;
@@ -511,6 +511,29 @@ Or the force decorator `!` to forcefully perform the conversion
 [%3] [LMB? λ] !ALPHA_CONVERT (\a. a) < HI;
 [%3] [WARN →] Possibility of identifier clash overriden with decorator !: identifier HI
 [%3] [DATA →] (λHI. HI)
+```
+#### SUBSTITUTE / SUB / SUBSTITUTION
+> Handle substitution of term
+
+The command uses the left-assignment operator `>`. Seperate the target identifier and replacement term with a comma:
+
+```
+[%0] [LMB? λ] SHOW HI;
+[%0] [INFO →] Terms matching HI are found.
+[%0] [DATA →] (hello world)
+
+[%1] [LMB? λ] SUBSTITUTE HI < hello, hi;
+[%1] [DATA →] (hi world)
+```
+
+Or scan the base namespace for identifiers that collides with any free variables in the target term:
+
+```
+[%2] [LMB? λ] DEF world := (\a. a);
+[%2] [DONE →] Defined world
+
+[%3] [LMB? λ] SUBSTITUTE HI;
+[%3] [DATA →] (hello (λa. a))
 ```
 
 #### TREE
@@ -552,6 +575,9 @@ Or the force decorator `!` to forcefully perform the conversion
     - COMMIT a539533cbf900cc303378bc19e5945589aed6347
         - *repl.py* Added methods for `EXTRACT_BODY`, `EXTRACT_VARIABLE`, `EXTRACT_FUNCTION`, `EXTRACT_VALUE`, `ALPHA_CONVERT` and introduced smart decorator `+`
         - *README.md* Added manual for `EXTRACT_BODY`, `EXTRACT_VARIABLE`, `EXTRACT_FUNCTION`, `EXTRACT_VALUE`, `ALPHA_CONVERT`
-    - COMMIT
+    - COMMIT 26dd5f590a727d17999e77d6acc56b3a978ef851
         - *README.md* Updated `latest` blockquote
         - *WEB* Added manual that clones from this README
+    - COMMIT
+        - *repl.py* Added methods for `SUBSTITUTION`
+        - *README.md* Added manual for command `SUBSTITUTION`
