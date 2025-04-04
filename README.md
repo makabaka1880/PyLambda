@@ -581,6 +581,9 @@ Or scan the base namespace for identifiers that collides with any free variables
     - COMMIT f7e5c30e72306d024e53f038611780932e5fb2f5
         - *repl.py* Added methods for `SUBSTITUTION`
         - *README.md* Added manual for command `SUBSTITUTION`
-    - COMMIT
+    - COMMIT f96189166efda24fd5f93a0b60f05fa5aa31fbc2
         - *repl.py* Update methods and marker comments for easier deployment
+        - *WEB* Updated deployment script
+    - COMMIT 
+        - *.github/workflows/cd_pipeline.yml* Added gh action to automatically trigger deployment on push
         - *WEB* Updated deployment script

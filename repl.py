@@ -31,7 +31,7 @@ def width():
     # It is a marker for the server update.
     # This code will be run on the server backend, and if False will be replaced with if True.
     if False: # MARKER:SERVER_UPDATE1
-        response = requests.get("https://localhost:5000/api/rows", verify=False)
+        response = requests.get("http://localhost:5000/api/cols", verify=False)
         if response.status_code == 200:
             return int(response.json())
         else:
