@@ -584,6 +584,9 @@ Or scan the base namespace for identifiers that collides with any free variables
     - COMMIT f96189166efda24fd5f93a0b60f05fa5aa31fbc2
         - *repl.py* Update methods and marker comments for easier deployment
         - *WEB* Updated deployment script
-    - COMMIT 
+- **Apr. 5**
+    - COMMIT 75408ee5b08ef1e774c076aa6060a3e80a0a9a24
         - *.github/workflows/cd_pipeline.yml* Added gh action to automatically trigger deployment on push
         - *WEB* Updated deployment script
+    - COMMIT
+        - .github/workflows/cd_pipeline.yml* Debug

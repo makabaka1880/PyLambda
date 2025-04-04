@@ -1,22 +1,21 @@
 name: CD Pipeline
 on: [push]
 jobs:
-  steps:
-  - name: Log Start of Deployment
-    run: echo "Starting deployment process..."
-
-  - name: Trigger Deployment
-    uses: tyrrrz/action-http-request@master
-    with:
-      url: 'https://pylambda.makabaka1880.xyz/deploy/pull'
-      method: POST
-      headers: |
-        X-API-Key: ${{ secrets.DEPLOY_API_KEY }}
-        User-Agent: GH Actions (https://github.com)
-        Accept: */*
-        Host: pylambda.makabaka1880.xyz
-        Connection: keep-alive
-        Cookie: cf_use_ob=0
-      retry-count: 3
-      retry-delay: 1000
-      fail-on-error: true
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Deployment
+      uses: tyrrrz/action-http-request@master
+      with:
+        url: 'https://pylambda.makabaka1880.xyz/deploy/pull'
+        method: POST
+        headers: |
+          X-API-Key: ${{ secrets.DEPLOY_API_KEY }}
+          User-Agent: GH Actions (https://github.com)
+          Accept: */*
+          Host: pylambda.makabaka1880.xyz
+          Connection: keep-alive
+          Cookie: cf_use_ob=0
+        retry-count: 3
+        retry-delay: 1000
+        fail-on-error: true
