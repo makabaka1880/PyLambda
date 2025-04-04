@@ -578,6 +578,9 @@ Or scan the base namespace for identifiers that collides with any free variables
     - COMMIT 26dd5f590a727d17999e77d6acc56b3a978ef851
         - *README.md* Updated `latest` blockquote
         - *WEB* Added manual that clones from this README
-    - COMMIT
+    - COMMIT f7e5c30e72306d024e53f038611780932e5fb2f5
         - *repl.py* Added methods for `SUBSTITUTION`
         - *README.md* Added manual for command `SUBSTITUTION`
+    - COMMIT
+        - *repl.py* Update methods and marker comments for easier deployment
+        - *WEB* Updated deployment script
