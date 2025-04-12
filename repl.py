@@ -31,12 +31,12 @@ def width():
     # It is a marker for the server update.
     # This code will be run on the server backend, and if False will be replaced with if True.
     if False: # MARKER:SERVER_UPDATE1
-        response = requests.get("http://localhost:5000/api/cols", verify=False)
+        response = requests.get("http://localhost:5050/api/cols", verify=False)
         if response.status_code == 200:
             return int(response.json())
         else:
             raise ValueError(f"Failed to fetch rows: {response.status_code} {response.reason}")
-        
+ 
     return int(result.stdout.decode().strip())
 
 def filler(width, *text, regard_labels: bool = True):

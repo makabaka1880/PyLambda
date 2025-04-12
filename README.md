@@ -588,5 +588,8 @@ Or scan the base namespace for identifiers that collides with any free variables
     - COMMIT 75408ee5b08ef1e774c076aa6060a3e80a0a9a24
         - *.github/workflows/cd_pipeline.yml* Added gh action to automatically trigger deployment on push
         - *WEB* Updated deployment script
-    - COMMIT
-        - .github/workflows/cd_pipeline.yml* Debug
+    - COMMIT a4e6c2503ddb36283c3d2d2c5398c6455a6cec66
+        - *.github/workflows/cd_pipeline.yml* Debug
+- **Apr. 12**
+    - COMMIT 
+        - *WEB* and *repl.py* Updated port number from 5000 -> 5050
