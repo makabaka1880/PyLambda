@@ -1,5 +1,8 @@
 # PyLambda
 
+[![Build and Push Image](https://github.com/makabaka1880/PyLambda/actions/workflows/build_docker.yml/badge.svg)](https://github.com/makabaka1880/PyLambda/actions/workflows/build_docker.yml)
+[![CD Pipeline](https://github.com/makabaka1880/PyLambda/actions/workflows/cd_pipeline.yml/badge.svg)](https://github.com/makabaka1880/PyLambda/actions/workflows/cd_pipeline.yml)
+
 > **Latest Update**  
 > Added methods to directly manipulate terms like extractions and conversions
 
