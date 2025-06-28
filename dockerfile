@@ -8,11 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
-# TODO: Create server
-# EXPOSE 5000
-
-VOLUME ["/app/data"]
-
-RUN echo "DEFAULT_DB_PATH=\"/app/data/terms.db\"" >> /app/.env
+ENV DEFAULT_DB_PATH=/app/terms.db
 
 CMD ["python", "/app/repl.py"]

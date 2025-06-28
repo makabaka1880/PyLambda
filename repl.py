@@ -24,7 +24,14 @@ counter = 0
 
 def width():
     """Get the width of the terminal window"""
-    result = subprocess.run(['tput', 'cols'], stdout=subprocess.PIPE)
+    try:
+        result = subprocess.run(['tput', 'cols'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        cols = int(result.stdout.decode().strip())
+        if cols > 0:
+            return cols
+    except Exception:
+        # Fallback for Docker or non-interactive environments
+        return int(os.environ.get("COLUMNS", 80))
     
     # The following code will be replaced when deployed on a server.
     # To further contributors, DO NOT REMOVE THIS CODE.
@@ -36,8 +43,8 @@ def width():
             return int(response.json())
         else:
             raise ValueError(f"Failed to fetch rows: {response.status_code} {response.reason}")
- 
-    return int(result.stdout.decode().strip())
+
+    return 80
 
 def filler(width, *text, regard_labels: bool = True):
     """Width of fillers needed to fill a line of certain width with text"""
