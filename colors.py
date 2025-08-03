@@ -33,6 +33,9 @@ def blinking_text(text):
 def status_label(text, hex_color, bg=False):
     return bold_text(color_text(f"[{text}]", hex_color, bg))
 
+def clear():
+    return "\033[2J\033[H"
+
 # MARK: Global Constants
 PALETTES = [
     # 0. Default
