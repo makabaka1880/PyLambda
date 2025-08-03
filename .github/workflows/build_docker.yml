@@ -1,0 +1,41 @@
+# Created by Sean L. on Jun. 29.
+# Last Updated by Sean L. on Jun. 29.
+# 
+# Pylambda
+# .github/workflows/build-release.yaml
+# 
+# FeatherDev, 2025. All rights reserved.
+
+name: Build and Push Image
+
+on:
+  push: 
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean up Docker
+        run: docker system prune -a -f
+        
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/pylambda:latest
+          platforms: linux/amd64, linux/arm64

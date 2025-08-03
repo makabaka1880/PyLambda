@@ -1,5 +1,9 @@
 name: CD Pipeline
-on: [push]
+
+on:
+  push: 
+    branches: [main]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,6 +20,6 @@ jobs:
           Host: pylambda.makabaka1880.xyz
           Connection: keep-alive
           Cookie: cf_use_ob=0
-        retry-count: 3
+        retry-count: 1
         retry-delay: 1000
         fail-on-error: true
