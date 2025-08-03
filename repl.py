@@ -6,19 +6,16 @@
 # Makabaka1880, 2025. All rights reserved.
 
 import readline
-from models.model import Term, Abstraction, Variable, Application
 from preproc import normalize_blank
 from parser import *
 from models.exceptions import *
 from utils.history import HistoryStore
 from utils.persistence import TermDB
-from colors import italic_text, bold_text, LABELS, COLORS, color_text, IO_label, status_label
+from colors import italic_text, bold_text, IO_label, status_label
 from utils.security import check_for_dangerous_regex_pattern
-import os
 import subprocess
-import re
 import requests
-from devconst import *;
+from devconst import *
 
 counter = 0
 
@@ -36,7 +33,7 @@ def width():
             return int(response.json())
         else:
             raise ValueError(f"Failed to fetch rows: {response.status_code} {response.reason}")
- 
+
     return int(result.stdout.decode().strip())
 
 def filler(width, *text, regard_labels: bool = True):
@@ -558,9 +555,10 @@ def main():
     session = REPLSession()
     session.history.clear()
     handler = CommandHandler(session)
-    # for color, label in zip(COLORS.values(), LABELS.values()):
-    #     print(f"{color_text(f'{label}', color, bg=True)}", end=' ')
-    # print()
+    interface.print_raw(clear())
+#    for color, label in zip(COLORS.values(), LABELS.values()):
+#        print(f"{color_text(f'{label}', color, bg=True)}", end=' ')
+#        print()
     while session.running:
         try:
             print(status_label(f'%{counter}', None), end=' ')
